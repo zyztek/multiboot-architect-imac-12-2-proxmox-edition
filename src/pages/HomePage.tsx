@@ -3,11 +3,11 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Cpu, HardDrive, ArrowRight, Activity, Network, Zap, ShieldCheck, LifeBuoy } from 'lucide-react';
+import { Cpu, HardDrive, Activity, Network, Zap, ShieldCheck, LifeBuoy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import type { ApiResponse, ProjectState } from '@shared/types';
 import { toast } from 'sonner';
@@ -24,14 +24,18 @@ export function HomePage() {
     refetchInterval: 5000
   });
   const handleTroubleshoot = async () => {
-    const res = await fetch('/api/troubleshoot', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logs })
-    });
-    const json = await res.json();
-    setTroubleshootResult(json.data.suggestion);
-    toast.info("Analysis complete");
+    try {
+      const res = await fetch('/api/troubleshoot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logs })
+      });
+      const json = await res.json();
+      setTroubleshootResult(json.data.suggestion);
+      toast.info("Analysis complete");
+    } catch (e) {
+      toast.error("Analysis failed");
+    }
   };
   if (isLoading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Booting Mission Control...</div>;
   const chartData = [
@@ -60,8 +64,8 @@ export function HomePage() {
                   <DialogTitle>Analyze System Logs</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
-                  <Textarea 
-                    placeholder="Paste dmesg or journalctl output here..." 
+                  <Textarea
+                    placeholder="Paste dmesg or journalctl output here..."
                     className="bg-black/50 border-white/10 h-40 font-mono text-xs"
                     value={logs}
                     onChange={(e) => setLogs(e.target.value)}
@@ -89,9 +93,15 @@ export function HomePage() {
                 <CardTitle>Host Performance</CardTitle>
                 <CardDescription>Real-time Telemetry</CardDescription>
               </div>
-              <div className="flex gap-4">
-                <div className="text-right"><div className="text-[10px] text-slate-500">CPU</div><div className="text-lg font-mono text-blue-400">{Math.round(state?.hostStats?.cpu_usage ?? 0)}%</div></div>
-                <div className="text-right"><div className="text-[10px] text-slate-500">MEM</div><div className="text-lg font-mono text-emerald-400">{state?.hostStats?.mem_usage ?? 0}%</div></div>
+              <div className="flex gap-4 font-mono">
+                <div className="text-right">
+                  <div className="text-[10px] text-slate-500">CPU</div>
+                  <div className="text-lg text-blue-400">{Math.round(state?.hostStats?.cpu_usage ?? 0)}%</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-slate-500">MEM</div>
+                  <div className="text-lg text-emerald-400">{state?.hostStats?.mem_usage ?? 0}%</div>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="h-[250px] w-full pt-4">
@@ -106,7 +116,7 @@ export function HomePage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="time" stroke="#475569" fontSize={10} />
                     <YAxis stroke="#475569" fontSize={10} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none' }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }} />
                     <Area type="monotone" dataKey="cpu" stroke="#3b82f6" fillOpacity={1} fill="url(#colorCpu)" />
                     <Area type="monotone" dataKey="mem" stroke="#10b981" fillOpacity={0} />
                   </AreaChart>
@@ -130,14 +140,14 @@ export function HomePage() {
                   <HardDrive className="size-5 text-emerald-500" />
                   <span className="text-sm">ZFS Pool</span>
                 </div>
-                <Badge className="bg-emerald-500/20 text-emerald-400">{state?.hostStats?.zfs_health}</Badge>
+                <Badge className="bg-emerald-500/20 text-emerald-400">{state?.hostStats?.zfs_health ?? 'ONLINE'}</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-black/20 rounded-lg border border-white/5">
                 <div className="flex items-center gap-3">
                   <Network className="size-5 text-purple-500" />
                   <span className="text-sm">PBS Backups</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500">2h ago</span>
+                <span className="text-[10px] font-mono text-slate-500">Last: 2h ago</span>
               </div>
             </CardContent>
           </Card>
