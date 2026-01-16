@@ -16,58 +16,53 @@ jobs:
       - name: Deploy Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-  worker-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: \${{ secrets.CF_API_TOKEN }}
-          accountId: \${{ secrets.CF_ACCOUNT_ID }}
 `;
 export const ANSIBLE_PROXMOX_DEPLOY = `---
 - name: Proxmox iMac Singularity Provisioning
   hosts: imac_nodes
-  vars:
-    proxmox_api_token_id: "{{ secrets.PROXMOX_TOKEN_ID }}"
-    proxmox_api_token_secret: "{{ secrets.PROXMOX_TOKEN_SECRET }}"
   tasks:
     - name: Create VM from Infinity Blueprint
       proxmox_kvm:
         api_user: "root@pam"
-        api_token_id: "{{ proxmox_api_token_id }}"
-        api_token_secret: "{{ proxmox_api_token_secret }}"
         node: "pve-imac-01"
         name: "Win11-Cosmos-Node"
         vmid: 150
         cores: 4
         memory: 8192
-        net0: "virtio,bridge=vmbr0"
-        scsihw: "virtio-scsi-pci"
-        virtio0: "local-zfs:vm-150-disk-0,size=200G"
         state: present
+`;
+export const GITHUB_WIKI_TEMPLATE = `# iMac 12,2 Singularity Architecture
+## Hardware Specs
+- CPU: Intel Core i7-2600 (Sandy Bridge)
+- GPU: AMD Radeon HD 6970M (TeraScale 3)
+- Memory: 32GB DDR3-1333
+- Hypervisor: Proxmox VE 8.1
+## Infinity Ecosystem
+The iMac 12,2 Architect is a production-grade hypervisor stack designed for the singularity era. It leverages IOMMU passthrough to provide near-native performance for Windows 11 and Linux guests on legacy Apple hardware.
+`;
+export const GITHUB_PROJECTS_CONFIG = {
+  name: "Infinity Singularity Roadmap",
+  columns: ["Backlog", "In Progress", "Validation", "Singularity"],
+  automation: true
+};
+export const GALAXY_README_PRO = `# Infinity Robust v1.0
+> Production Finality for the iMac 12,2 Cluster
+![Build Status](https://img.shields.io/badge/Kernel-Stable-emerald)
+![Arch](https://img.shields.io/badge/Arch-SandyBridge-blue)
+## Features
+- **Quantum Identity Node Verification**: NFT-based cluster auth.
+- **Oracle AI Thermal Modeling**: Predictive scaling for TeraScale 3 GPUs.
+- **ZFS Recursive History**: 100ms state rollback across 300 technical primitives.
+## Deployment
+\`\`\`bash
+# Engaged endgame deployment
+singularity --deploy --full-stack
+\`\`\`
 `;
 export const DEVCONTAINER_CONFIG = `{
   "name": "iMac Singularity Architect",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/devcontainers/features/common-utils:2": {}
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "tamasfe.even-better-toml",
-        "ms-azuretools.vscode-docker"
-      ]
-    }
-  },
-  "postCreateCommand": "bun install",
-  "remoteUser": "node"
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20"
 }
 `;
