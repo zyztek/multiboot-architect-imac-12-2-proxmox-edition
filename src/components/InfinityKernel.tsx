@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { HomePage } from '@/pages/HomePage';
@@ -15,7 +15,7 @@ import { UsbForge } from '@/pages/UsbForge';
 import { UsbFlash } from '@/pages/UsbFlash';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, ShieldAlert } from 'lucide-react';
-const router = createBrowserRouter([
+const APP_ROUTER = createBrowserRouter([
   { path: "/", element: <HomePage />, errorElement: <RouteErrorBoundary /> },
   { path: "/report", element: <IntelligenceReport />, errorElement: <RouteErrorBoundary /> },
   { path: "/tools", element: <ArchitectTools />, errorElement: <RouteErrorBoundary /> },
@@ -106,7 +106,7 @@ export function InfinityKernel() {
           </div>
         )}
         {(syncStatus === 'stable' || syncStatus === 'degraded') && (
-          <RouterProvider router={router} />
+          <RouterProvider router={APP_ROUTER} />
         )}
       </div>
     </>
