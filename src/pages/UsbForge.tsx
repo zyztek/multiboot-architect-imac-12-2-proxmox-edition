@@ -41,7 +41,7 @@ export function UsbForge() {
   return (
     <AppLayout container className="bg-slate-950 text-white min-h-screen">
       <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-20">
-        <div className="border-b border-white/10 pb-8 flex justify-between items-end">
+        <div className="border-b border-white/10 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div className="space-y-2">
             <h1 className="text-6xl font-black tracking-tighter uppercase italic">Remote Forge</h1>
             <p className="text-blue-400 font-mono text-[10px] tracking-[0.4em] uppercase">Persistent Cloud Provisioning</p>
@@ -50,7 +50,7 @@ export function UsbForge() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-5 space-y-6">
-            <Card className="glass-dark border-white/10 text-white overflow-hidden">
+            <Card className="glass-dark border-white/10 text-white overflow-hidden shadow-2xl">
               <CardHeader className="bg-white/5 border-b border-white/5">
                 <CardTitle className="text-xs uppercase text-blue-400 font-black flex items-center gap-2">
                   <Package className="size-4" /> New Bundle Forge
@@ -61,75 +61,93 @@ export function UsbForge() {
                   <Label className="text-[10px] uppercase font-black text-slate-500 tracking-widest">OS Selection</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {['Win11', 'Kali', 'openFyde', 'Ubuntu'].map(os => (
-                      <div key={os} className="flex items-center space-x-2 bg-black/40 p-3 rounded-lg border border-white/5">
-                        <Checkbox 
-                          id={os} 
-                          checked={selectedOS.includes(os)} 
+                      <div key={os} className="flex items-center space-x-3 bg-black/40 p-3 rounded-lg border border-white/5 hover:border-blue-500/30 transition-all">
+                        <Checkbox
+                          id={os}
+                          checked={selectedOS.includes(os)}
                           onCheckedChange={(val) => val ? setSelectedOS([...selectedOS, os]) : setSelectedOS(selectedOS.filter(x => x !== os))}
                         />
-                        <label htmlFor={os} className="text-[11px] font-bold uppercase cursor-pointer">{os}</label>
+                        <label htmlFor={os} className="text-[11px] font-bold uppercase cursor-pointer select-none">{os}</label>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-3">
                    <Label className="text-[10px] uppercase font-black text-slate-500 tracking-widest">Module Stack</Label>
-                   {[ShieldCheck, Cpu, HardDrive].map((Icon, i) => (
-                     <div key={i} className="flex items-center gap-3 p-3 bg-blue-600/5 border border-blue-500/20 rounded-lg">
-                       <Icon className="size-4 text-blue-400" />
-                       <span className="text-[10px] font-bold text-slate-400">Automatic iMac Injection</span>
-                     </div>
-                   ))}
+                   <div className="space-y-2">
+                     {[ShieldCheck, Cpu, HardDrive].map((Icon, i) => (
+                       <div key={i} className="flex items-center gap-3 p-3 bg-blue-600/5 border border-blue-500/20 rounded-lg">
+                         <Icon className="size-4 text-blue-400" />
+                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Automatic iMac 12,2 Injection</span>
+                       </div>
+                     ))}
+                   </div>
                 </div>
-                <Button 
-                  onClick={() => forgeMutation.mutate()} 
+                <Button
+                  onClick={() => forgeMutation.mutate()}
                   disabled={forgeMutation.isPending || selectedOS.length === 0}
-                  className="w-full h-14 bg-blue-600 hover:bg-blue-500 font-black text-xs uppercase tracking-[0.2em] shadow-glow"
+                  className="w-full h-14 bg-blue-600 hover:bg-blue-500 font-black text-xs uppercase tracking-[0.2em] shadow-glow-lg transition-all"
                 >
-                  {forgeMutation.isPending ? <Loader2 className="animate-spin size-5" /> : <Globe className="size-5 mr-3" />}
-                  Commence Remote Forge
+                  {forgeMutation.isPending ? <Loader2 className="animate-spin size-5 mr-3" /> : <Globe className="size-5 mr-3" />}
+                  {forgeMutation.isPending ? "INITIATING..." : "Commence Remote Forge"}
                 </Button>
               </CardContent>
             </Card>
           </div>
           <div className="lg:col-span-7 space-y-6">
-             <Card className="glass-dark border-white/10 text-white h-full flex flex-col">
+             <Card className="glass-dark border-white/10 text-white h-full min-h-[500px] flex flex-col shadow-2xl overflow-hidden">
                 <CardHeader className="bg-white/5 border-b border-white/5 py-4">
                   <CardTitle className="text-emerald-400 text-xs font-black uppercase tracking-widest flex items-center gap-2 italic">
                     <Clock className="size-4" /> Active Job Queue
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4 overflow-auto">
+                <CardContent className="p-6 space-y-4 overflow-auto flex-1">
                    {activeJobs.length === 0 ? (
-                     <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-xl text-slate-600">
-                        <Package className="size-12 mb-3" />
-                        <span className="text-[10px] font-black uppercase">No Active Provisioning Tasks</span>
+                     <div className="h-full min-h-[300px] flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-2xl text-slate-600">
+                        <Package className="size-16 mb-4 opacity-20" />
+                        <span className="text-[11px] font-black uppercase tracking-widest">No Active Provisioning Tasks</span>
                      </div>
                    ) : (
                      <AnimatePresence>
                        {activeJobs.map((job) => (
-                         <motion.div 
-                           key={job.id} 
-                           initial={{ opacity: 0, x: -20 }} 
-                           animate={{ opacity: 1, x: 0 }}
-                           className="bg-black/40 border border-white/5 p-4 rounded-xl space-y-3"
+                         <motion.div
+                           key={job.id}
+                           initial={{ opacity: 0, y: 10 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           className="bg-black/40 border border-white/10 p-5 rounded-2xl space-y-4 hover:border-blue-500/40 transition-all"
                          >
                            <div className="flex justify-between items-start">
                              <div className="space-y-1">
-                               <div className="flex items-center gap-2">
-                                 <Badge className="bg-blue-600 text-[8px] h-4">{job.status}</Badge>
-                                 <span className="text-[10px] font-mono text-slate-500">{job.id.slice(0, 8)}</span>
+                               <div className="flex items-center gap-3">
+                                 <Badge className={`${job.status === 'completed' ? 'bg-emerald-600' : 'bg-blue-600'} text-[8px] h-4 uppercase`}>
+                                   {job.status}
+                                 </Badge>
+                                 <span className="text-[10px] font-mono text-slate-500 tracking-tighter">{job.id.slice(0, 12)}</span>
                                </div>
-                               <h4 className="text-xs font-bold uppercase">{job.targetOs.join(' + ')} Deployment</h4>
+                               <h4 className="text-sm font-black uppercase tracking-tight pt-1">
+                                 {job.targetOs.join(' + ')} Deployment Bundle
+                               </h4>
                              </div>
                              <div className="text-right">
-                               <p className="text-[9px] font-mono text-slate-500">{new Date(job.timestamp).toLocaleTimeString()}</p>
+                               <p className="text-[10px] font-mono text-slate-500 uppercase">{new Date(job.timestamp).toLocaleTimeString()}</p>
                              </div>
                            </div>
-                           <Progress value={job.progress} className="h-1 bg-slate-900" />
-                           <div className="flex justify-between items-center">
-                             <span className="text-[9px] text-slate-500 font-bold uppercase">{job.components.length} Components Injected</span>
-                             {job.status === 'completed' && <Button size="sm" variant="ghost" className="h-6 text-[9px] text-emerald-400"><Download className="size-3 mr-2" /> Retrieve</Button>}
+                           <div className="space-y-2">
+                             <div className="flex justify-between text-[9px] font-black uppercase text-slate-400 px-1">
+                               <span>Synthesis Depth</span>
+                               <span>{job.progress}%</span>
+                             </div>
+                             <Progress value={job.progress} className="h-1.5 bg-slate-900" />
+                           </div>
+                           <div className="flex justify-between items-center pt-2">
+                             <span className="text-[10px] text-slate-500 font-bold uppercase italic">
+                               {job.components.length} Primitives Linked
+                             </span>
+                             {job.status === 'completed' && (
+                               <Button size="sm" variant="secondary" className="h-8 text-[10px] font-black uppercase px-4 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/20">
+                                 <Download className="size-3 mr-2" /> Retrieve Blueprint
+                               </Button>
+                             )}
                            </div>
                          </motion.div>
                        ))}

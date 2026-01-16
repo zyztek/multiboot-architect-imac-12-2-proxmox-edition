@@ -4,11 +4,12 @@ import { MOCK_FLEET, MOCK_SNAPSHOTS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     private packChecklist(checklist: boolean[]): string {
         try {
+            // 300 bits requires 38 bytes (300 / 8 = 37.5)
             const bits = new Uint8Array(38);
             for (let i = 0; i < 300; i++) {
-                const byte = Math.floor(i / 8);
-                const bit = i % 8;
                 if (checklist[i]) {
+                    const byte = Math.floor(i / 8);
+                    const bit = i % 8;
                     bits[byte] |= (1 << bit);
                 }
             }
@@ -52,7 +53,6 @@ export class GlobalDurableObject extends DurableObject {
         if (typeof current.checklist === 'string') {
           current.checklist = this.unpackChecklist(current.checklist);
         }
-        // Ensure new fields exist even in old stored state
         current.activeForgeJobs = current.activeForgeJobs ?? [];
         current.usbDeviceState = current.usbDeviceState ?? { lastConnected: null };
         current.isDegraded = false;

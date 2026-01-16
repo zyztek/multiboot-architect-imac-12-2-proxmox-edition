@@ -107,11 +107,17 @@ export function Singularity() {
             </CardContent>
           </Card>
           <Card className="glass-dark border-white/10 text-white flex flex-col">
-            <CardHeader><CardTitle className="text-[10px] uppercase text-blue-400 flex items-center gap-2 italic"><Activity className="size-3" /> Eternal Pulse</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-[10px] uppercase text-blue-400 flex items-center gap-2 italic">
+                <Activity className="size-3" /> Eternal Pulse
+              </CardTitle>
+            </CardHeader>
             <CardContent className="flex-1 space-y-4">
                <div className="h-48 bg-black/60 rounded-xl border border-white/5 p-4 font-mono text-[9px] overflow-auto space-y-1 text-emerald-400/80">
                   {state?.orchestrationLog?.slice(-12).map((log, i) => (
-                    <div key={i} className="truncate"><span className="opacity-40">>></span> {log}</div>
+                    <div key={i} className="truncate">
+                      <span className="opacity-40">{" >> "}</span> {log}
+                    </div>
                   ))}
                </div>
                <div className="pt-4 space-y-2">
@@ -143,8 +149,8 @@ export function Singularity() {
                       <span>{isForging ? `${Math.round((forgeStep/3)*100)}%` : "0%"}</span>
                     </div>
                     <Progress value={isForging ? (forgeStep/3)*100 : 0} className="h-1.5 bg-slate-900" />
-                    <Button 
-                      onClick={() => forgeMutation.mutate()} 
+                    <Button
+                      onClick={() => forgeMutation.mutate()}
                       disabled={isForging || isComplete}
                       className="w-full h-14 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest shadow-glow text-xs"
                     >
