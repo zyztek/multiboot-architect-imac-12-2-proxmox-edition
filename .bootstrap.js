@@ -82,7 +82,8 @@ function runSetupCommands() {
     "bun add lucide-react framer-motion @tanstack/react-query",
     "bun add clsx tailwind-merge",
     "bun add uuid",
-    "bun add @tanstack/react-query"
+    "bun add @tanstack/react-query",
+    "bun add canvas-confetti"
 ];
     
     if (commands.length === 0) {
