@@ -18,17 +18,48 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const state = await stub.updateHostStats();
         return c.json({ success: true, data: state.hostStats });
     });
+    app.post('/api/proxmox/vm/action', async (c) => {
+        const { vmid, action } = await c.req.json() as { vmid: number, action: 'start' | 'stop' | 'pause' };
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const state = await stub.getProjectState();
+        const updatedVms = state.vms.map(vm => {
+          if (vm.vmid === vmid) {
+            let status: VmConfig['status'] = vm.status;
+            if (action === 'start') status = 'running';
+            if (action === 'stop') status = 'stopped';
+            if (action === 'pause') status = 'paused';
+            return { ...vm, status };
+          }
+          return vm;
+        });
+        const newState = { ...state, vms: updatedVms };
+        const data = await stub.updateProjectState(newState);
+        return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
+    });
     app.post('/api/ai-wizard', async (c) => {
         const req = await c.req.json() as AiArchitectRequest;
-        // Mock rule-based AI logic
-        const response: AiArchitectResponse = {
-            recommendedVms: [
-                { vmid: 100, name: `${req.goal}-Main`, cores: 4, memory: Math.floor(req.ramGb * 0.5 * 1024), diskId: 'local-zfs', hasTpm: true, gpuPassthrough: true }
-            ],
-            zfsConfig: `zfs create rpool/data/${req.goal.toLowerCase()} -o compression=lz4`,
-            cliCommands: [`qm create 100 --name ${req.goal}-Primary --memory 4096 --net0 virtio,bridge=vmbr0`],
-            reasoning: `Based on your goal of ${req.goal}, we allocated 50% of your ${req.ramGb}GB RAM to a primary high-performance node with GPU passthrough enabled for the iMac's Radeon 6970M.`
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const state = await stub.getProjectState();
+        const vmid = 100 + state.vms.length;
+        const recommendedVm: VmConfig = { 
+          vmid, 
+          name: `${req.goal}-Node-${vmid}`, 
+          cores: req.goal === 'Workstation' ? 4 : 2, 
+          memory: Math.floor(req.ramGb * 0.4 * 1024), 
+          diskId: 'local-zfs', 
+          hasTpm: req.goal === 'Workstation', 
+          gpuPassthrough: req.goal === 'Gaming' || req.goal === 'Workstation',
+          status: 'stopped'
         };
+        const response: AiArchitectResponse = {
+            recommendedVms: [recommendedVm],
+            zfsConfig: `zfs create rpool/data/${req.goal.toLowerCase()}-${vmid} -o compression=lz4`,
+            cliCommands: [`qm create ${vmid} --name ${recommendedVm.name} --memory ${recommendedVm.memory} --net0 virtio,bridge=vmbr0`],
+            reasoning: `Based on your goal of ${req.goal}, we allocated resources to a new ${recommendedVm.name} node, optimized for Sandy Bridge CPU limits.`
+        };
+        // Also add to state so it appears in dashboard
+        const newState = { ...state, vms: [...state.vms, recommendedVm] };
+        await stub.updateProjectState(newState);
         return c.json({ success: true, data: response });
     });
     app.post('/api/troubleshoot', async (c) => {
