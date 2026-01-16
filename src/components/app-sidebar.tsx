@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, ShieldCheck, Layers, Box } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -15,7 +15,8 @@ export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const menuItems = [
     { path: "/", icon: Home, label: "Mission Control" },
-    { path: "/proxmox", icon: LayoutDashboard, label: "Hypervisor VM" },
+    { path: "/proxmox", icon: LayoutDashboard, label: "Cluster View" },
+    { path: "/orchestrator", icon: Layers, label: "Orchestrator" },
     { path: "/report", icon: BookOpen, label: "Intelligence" },
     { path: "/tools", icon: PenTool, label: "Script Forge" },
     { path: "/protocol", icon: CheckSquare, label: "Deployment" },
@@ -29,7 +30,7 @@ export function AppSidebar(): JSX.Element {
           </div>
           <div className="flex flex-col">
             <span className="text-base font-bold tracking-tighter text-white uppercase leading-none">iMac 12,2</span>
-            <span className="text-[9px] text-slate-500 font-mono tracking-widest uppercase mt-1">MultiBoot Arch</span>
+            <span className="text-[9px] text-blue-400 font-mono tracking-widest uppercase mt-1">Galaxy Brain</span>
           </div>
         </div>
       </SidebarHeader>
@@ -38,19 +39,22 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="gap-2">
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.path}>
-                <SidebarMenuButton 
-                  asChild 
+                <SidebarMenuButton
+                  asChild
                   isActive={location.pathname === item.path}
                   className={`
-                    transition-all duration-300 h-11 px-4 rounded-lg
-                    ${location.pathname === item.path 
-                      ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)]' 
+                    transition-all duration-300 h-11 px-4 rounded-lg group
+                    ${location.pathname === item.path
+                      ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)]'
                       : 'hover:bg-white/5 hover:text-white border border-transparent'}
                   `}
                 >
                   <Link to={item.path} className="flex items-center gap-3">
-                    <item.icon className={`size-4 ${location.pathname === item.path ? 'text-blue-400' : 'text-slate-500'}`} /> 
+                    <item.icon className={`size-4 ${location.pathname === item.path ? 'text-blue-400' : 'text-slate-500 group-hover:text-white'}`} />
                     <span className="font-medium tracking-tight text-sm">{item.label}</span>
+                    {item.label === 'Orchestrator' && (
+                      <span className="ml-auto size-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -60,12 +64,12 @@ export function AppSidebar(): JSX.Element {
       </SidebarContent>
       <SidebarFooter className="p-6 border-t border-white/5 bg-black/20">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono">
-            <ShieldCheck className="size-3 text-emerald-500/50" /> 
-            v1.5.0-PROXMOX-EDITION
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono font-bold animate-pulse">
+            <Box className="size-3" />
+            CLUSTER MODE: ACTIVE
           </div>
           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="text-[8px] text-slate-700 uppercase font-bold tracking-[0.2em]">Sandy Bridge Optimized</div>
+          <div className="text-[8px] text-slate-700 uppercase font-bold tracking-[0.2em]">Intergalactic Tsunami</div>
         </div>
       </SidebarFooter>
     </Sidebar>
