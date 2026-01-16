@@ -1,42 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { History, ShieldAlert, Cpu, Sparkles, Wand2, Orbit } from 'lucide-react';
+import { History, ShieldAlert, Cpu, Sparkles, Wand2, Orbit, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { globalVoiceEngine } from '@/lib/voice-engine';
+import { OracleCommander } from '@/components/OracleCommander';
 import type { ApiResponse, ProjectState, OracleMetrics } from '@shared/types';
 export function HomePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: state } = useQuery({
+  const { data: state, isError: stateError } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
       const res = await fetch('/api/project-state');
+      if (!res.ok) throw new Error("Network response was not ok");
       const json = await res.json() as ApiResponse<ProjectState>;
-      if (!json.success || !json.data) {
-        throw new Error("Project state payload missing or invalid");
-      }
-      return json.data;
+      return json.data || null;
     },
-    refetchInterval: 5000
+    refetchInterval: 5000,
   });
   const { data: oracle } = useQuery({
     queryKey: ['oracle-predict'],
     queryFn: async () => {
       const res = await fetch('/api/oracle/predict', { method: 'POST' });
+      if (!res.ok) throw new Error("Oracle connection failed");
       const json = await res.json() as ApiResponse<OracleMetrics>;
-      if (!json.success || !json.data) {
-        throw new Error("Oracle prediction payload missing");
-      }
-      return json.data;
+      return json.data || null;
     },
-    refetchInterval: 15000
+    refetchInterval: 15000,
   });
   const singularityMutation = useMutation({
     mutationFn: async () => {
@@ -52,6 +49,16 @@ export function HomePage() {
     globalVoiceEngine.registerCommand('singularity', () => navigate('/singularity'));
     globalVoiceEngine.registerCommand('revert', () => toast.info("Timebend Mirror Initialized"));
   }, [navigate]);
+  if (stateError) {
+    return (
+      <div className="h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 p-4">
+        <ShieldAlert className="size-12 text-rose-500 mb-4 animate-pulse" />
+        <h2 className="text-xl font-black uppercase tracking-widest italic">Kernel Disconnected</h2>
+        <p className="text-xs text-slate-500 mt-2 font-mono uppercase">Attempting emergency link stabilization...</p>
+        <Button onClick={() => window.location.reload()} variant="outline" className="mt-6 border-white/10 text-[10px] uppercase font-bold">Hard Reset</Button>
+      </div>
+    );
+  }
   const checklist = state?.checklist ?? [];
   const completed = checklist.filter(Boolean).length;
   const progress = (completed / 300) * 100;
@@ -94,7 +101,7 @@ export function HomePage() {
                   disabled={singularityMutation.isPending || progress >= 100}
                   className="bg-blue-600 hover:bg-blue-500 h-14 px-8 rounded-full text-xs font-black uppercase tracking-widest shadow-blue-500/20 shadow-lg"
                 >
-                  <Sparkles className="size-4 mr-2" /> One-Click Singularity
+                  {singularityMutation.isPending ? <Loader2 className="size-4 animate-spin mr-2" /> : <Sparkles className="size-4 mr-2" />} One-Click Singularity
                 </Button>
              </div>
           </div>
@@ -150,6 +157,7 @@ export function HomePage() {
           </div>
         </div>
       </div>
+      <OracleCommander />
     </AppLayout>
   );
 }

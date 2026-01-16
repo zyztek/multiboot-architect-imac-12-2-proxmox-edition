@@ -5,11 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { History, Share2, Binary, Radio, KeyRound, ShieldCheck, Globe } from 'lucide-react';
+import { History, Share2, Binary, Radio, KeyRound, ShieldCheck, Globe, Zap, Cpu } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { CosmosExportPanel } from '@/components/CosmosExportPanel';
+import { OracleCommander } from '@/components/OracleCommander';
 import type { ApiResponse, ProjectState } from '@shared/types';
 export function Singularity() {
   const queryClient = useQueryClient();
@@ -20,8 +21,7 @@ export function Singularity() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
-      if (!json.success || !json.data) throw new Error("Sync failure");
-      return json.data;
+      return json.data || null;
     }
   });
   const timebendMutation = useMutation({
@@ -79,13 +79,18 @@ export function Singularity() {
             <TabsContent value="cosmos" className="pt-8 animate-fade-in">
               <CosmosExportPanel />
             </TabsContent>
-            <TabsContent value="timebend" className="pt-6 space-y-4">
+            <TabsContent value="timebend" className="pt-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {timebend.map((h) => (
-                  <Card key={h.id} className="glass-dark border-white/10 hover:border-blue-500/40 transition-all group">
+                {timebend.map((h, i) => (
+                  <Card key={h.id} className="glass-dark border-white/10 hover:border-blue-500/40 transition-all group overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/20 group-hover:bg-blue-500 transition-colors" />
                     <div className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <History className="size-5 text-blue-500" />
+                        <div className="flex flex-col items-center">
+                          <History className="size-5 text-blue-500" />
+                          <div className="h-4 w-px bg-white/10 my-1" />
+                          <span className="text-[8px] text-slate-500 font-mono">#{timebend.length - i}</span>
+                        </div>
                         <div>
                           <p className="text-xs font-bold text-white uppercase">{h.label}</p>
                           <p className="text-[9px] text-slate-500 font-mono">{new Date(h.timestamp).toLocaleString()}</p>
@@ -94,7 +99,7 @@ export function Singularity() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 text-[9px] uppercase font-black border-blue-500/20 hover:bg-blue-600"
+                        className="h-8 text-[9px] uppercase font-black border-blue-500/20 hover:bg-blue-600 group-hover:border-blue-500"
                         onClick={() => timebendMutation.mutate(h.id)}
                         disabled={timebendMutation.isPending}
                       >Revert</Button>
@@ -103,7 +108,7 @@ export function Singularity() {
                 ))}
               </div>
             </TabsContent>
-            <TabsContent value="wormhole" className="pt-6">
+            <TabsContent value="wormhole" className="pt-6 space-y-6">
                <Card className="glass-dark border-white/10 p-12 text-center space-y-6">
                   <div className="flex flex-col items-center gap-4">
                     <motion.div
@@ -116,14 +121,40 @@ export function Singularity() {
                     <h3 className="text-xl font-black uppercase tracking-tight">Wormhole Forge</h3>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto uppercase tracking-wide">Generate a singularity-level AppOS ISO for immediate multi-node deployment.</p>
                   </div>
+                  <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                     <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-3">
+                        <h4 className="text-[10px] font-black uppercase text-blue-400 flex items-center gap-2">
+                           <Zap className="size-3" /> Primitive Manifest
+                        </h4>
+                        <ul className="text-[9px] text-slate-500 font-mono space-y-1">
+                           <li className="flex justify-between"><span>Codex Units</span><span className="text-white">300/300</span></li>
+                           <li className="flex justify-between"><span>Kernel Mode</span><span className="text-white">Robust-X</span></li>
+                           <li className="flex justify-between"><span>I/O Profile</span><span className="text-white">TeraScale 3</span></li>
+                        </ul>
+                     </div>
+                     <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-3">
+                        <h4 className="text-[10px] font-black uppercase text-purple-400 flex items-center gap-2">
+                           <Cpu className="size-3" /> Target Arch
+                        </h4>
+                        <ul className="text-[9px] text-slate-500 font-mono space-y-1">
+                           <li className="flex justify-between"><span>System</span><span className="text-white">iMac 12,2</span></li>
+                           <li className="flex justify-between"><span>Hypervisor</span><span className="text-white">Proxmox VE</span></li>
+                           <li className="flex justify-between"><span>Verification</span><span className="text-white text-emerald-400">NFT-Quantum</span></li>
+                        </ul>
+                     </div>
+                  </div>
                   <div className="max-w-lg mx-auto bg-black/40 p-6 rounded-xl border border-white/5 space-y-4">
+                    <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 mb-1">
+                      <span>{isForging ? `Layer ${forgeStep} Injection` : "Forge Ready"}</span>
+                      <span>{isForging ? `${Math.round((forgeStep/3)*100)}%` : "0%"}</span>
+                    </div>
                     <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800" />
                     <Button
                       onClick={() => forgeMutation.mutate()}
                       disabled={isForging}
-                      className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest mt-4"
+                      className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest mt-4 shadow-blue-500/20 shadow-lg"
                     >
-                      {isForging ? "FORGING..." : "INITIATE FORGE"}
+                      {isForging ? "FORGING UNIVERSE..." : "INITIATE WORMHOLE FORGE"}
                     </Button>
                   </div>
                </Card>
@@ -179,13 +210,14 @@ export function Singularity() {
                        <div className="text-xs font-mono text-emerald-400">ACTIVE</div>
                     </div>
                  </div>
-                 <Button className="w-full h-10 bg-white/5 border border-white/10 text-[10px] uppercase font-black tracking-widest mt-2">
+                 <Button className="w-full h-10 bg-white/5 border border-white/10 text-[10px] uppercase font-black tracking-widest mt-2 hover:bg-white/10 transition-colors">
                     <Share2 className="size-3 mr-2" /> Broadcast Config to Cosmos
                  </Button>
              </Card>
           </div>
         </div>
       </div>
+      <OracleCommander />
     </AppLayout>
   );
 }
