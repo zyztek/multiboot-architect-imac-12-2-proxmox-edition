@@ -3,7 +3,7 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export' | 'infinity-batch';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
 export interface AuthUser {
   id: string;
@@ -24,12 +24,26 @@ export interface AiArchitectRequest {
   ramGb: number;
   storageGb: number;
 }
+export interface OracleMetrics {
+  chaosProbability: number;
+  thermalSaturation: number;
+  instabilityWarnings: string[];
+  costEstimate: number;
+  efficiencyScore: number;
+}
 export interface AiArchitectResponse {
   recommendedVms: VmConfig[];
   zfsConfig: string;
   cliCommands: string[];
   reasoning: string;
   prediction: string;
+  oracleMetrics?: OracleMetrics;
+}
+export interface TimebendHistory {
+  id: string;
+  timestamp: string;
+  label: string;
+  state: string; // JSON stringified state
 }
 export interface ConsoleSession {
   id: string;
@@ -40,7 +54,7 @@ export interface ConsoleSession {
 }
 export interface CodexItem {
   id: string;
-  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity';
+  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity' | 'Quantum' | 'Meta' | 'Bend';
   title: string;
   description: string;
   complexity: 'Standard' | 'Advanced' | 'Elite' | 'God' | 'Singularity';
@@ -74,6 +88,7 @@ export interface SingularityConfig {
   voiceActive: boolean;
   fleetMode: 'solo' | 'swarm' | 'hive';
   exportProgress: number;
+  quantumEntropy: number;
 }
 export interface StorageConfig {
   win11: number;
@@ -109,6 +124,8 @@ export interface ProjectState {
   nodes: ClusterNode[];
   fleet: FleetNode[];
   snapshots: Snapshot[];
+  timebend: TimebendHistory[];
+  oracleLog: string[];
   singularity: SingularityConfig;
   apiConfig: {
     url: string;
@@ -128,6 +145,10 @@ export interface ProjectState {
   auth: {
     isAuthenticated: boolean;
     user: AuthUser | null;
+  };
+  pwaState: {
+    isSynced: boolean;
+    lastOfflineSync: string;
   };
   lastUpdated: string;
 }
