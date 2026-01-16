@@ -3,8 +3,23 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
+export interface ClusterNode {
+  id: string;
+  name: string;
+  status: 'online' | 'offline';
+  cpu_usage: number;
+  mem_usage: number;
+  ip: string;
+}
+export interface SensorData {
+  temp_cpu: number;
+  temp_gpu: number;
+  fan_speed: number;
+  power_draw: number;
+  timestamp: string;
+}
 export interface ProxmoxHostStats {
   cpu_usage: number;
   mem_usage: number;
@@ -35,6 +50,7 @@ export interface VmConfig {
   status?: VmStatus;
   ipAddress?: string;
   tags?: string[];
+  node?: string;
 }
 export interface AiArchitectRequest {
   goal: 'Workstation' | 'Server' | 'Gaming';
@@ -47,13 +63,17 @@ export interface AiArchitectResponse {
   zfsConfig: string;
   cliCommands: string[];
   reasoning: string;
+  prediction?: string;
 }
 export interface ProjectState {
   checklist: boolean[];
   storage: StorageConfig;
   vms: VmConfig[];
+  nodes: ClusterNode[];
   apiConfig: ApiConfig;
   hostStats: ProxmoxHostStats;
+  sensors: SensorData[];
+  orchestrationLog: string[];
   lastUpdated: string;
 }
 export interface ApiResponse<T = unknown> {
