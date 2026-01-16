@@ -11,21 +11,33 @@ export function HomePage() {
   const { data: state } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
-      const res = await fetch('/api/project-state');
-      const json = await res.json() as ApiResponse<ProjectState>;
-      if (!json.success || !json.data) throw new Error("State sync failed");
-      return json.data;
+      try {
+        const res = await fetch('/api/project-state');
+        if (!res.ok) return {vms: []};
+        const json = await res.json() as ApiResponse<ProjectState>;
+        if (!json || !json.success || json.data === undefined) return {vms: []};
+        return json.data;
+      } catch {
+        return {vms: []};
+      }
     },
+    placeholderData: {vms: []},
     refetchInterval: 5000
   });
   const { data: sensors } = useQuery({
     queryKey: ['sensors'],
     queryFn: async () => {
-      const res = await fetch('/api/sensors');
-      const json = await res.json() as ApiResponse<SensorData>;
-      if (!json.success || !json.data) throw new Error("Sensor sync failed");
-      return json.data;
+      try {
+        const res = await fetch('/api/sensors');
+        if (!res.ok) return {temp_cpu: 0, temp_gpu: 0, power_draw: 0};
+        const json = await res.json() as ApiResponse<SensorData>;
+        if (!json || !json.success || json.data === undefined) return {temp_cpu: 0, temp_gpu: 0, power_draw: 0};
+        return json.data;
+      } catch {
+        return {temp_cpu: 0, temp_gpu: 0, power_draw: 0};
+      }
     },
+    placeholderData: {temp_cpu: 0, temp_gpu: 0, power_draw: 0},
     refetchInterval: 2000
   });
   const vms = state?.vms ?? [];
