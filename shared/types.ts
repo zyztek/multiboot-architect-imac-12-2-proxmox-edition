@@ -3,14 +3,14 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
 export interface CodexItem {
   id: string;
-  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy';
+  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity';
   title: string;
   description: string;
-  complexity: 'Standard' | 'Advanced' | 'Elite' | 'God';
+  complexity: 'Standard' | 'Advanced' | 'Elite' | 'God' | 'Singularity';
   cmd?: string;
   isUnlocked?: boolean;
 }
@@ -19,14 +19,28 @@ export interface DeploymentStep {
   title: string;
   category: string;
   desc: string;
-  requires?: number[]; // Array of step IDs that must be completed first
-  priority?: number; // User priority score
+  requires?: number[];
+  priority?: number;
 }
-export interface AuthUser {
+export interface FleetNode {
   id: string;
-  username: string;
-  role: 'admin' | 'guest';
-  token?: string;
+  name: string;
+  ip: string;
+  load: number;
+  status: 'online' | 'syncing' | 'offline';
+  isLeader: boolean;
+}
+export interface Snapshot {
+  id: string;
+  timestamp: string;
+  checklistState: boolean[];
+  label: string;
+}
+export interface SingularityConfig {
+  arEnabled: boolean;
+  voiceActive: boolean;
+  fleetMode: 'solo' | 'swarm' | 'hive';
+  exportProgress: number;
 }
 export interface StorageConfig {
   win11: number;
@@ -54,52 +68,15 @@ export interface ClusterNode {
   mem_usage: number;
   ip: string;
 }
-export interface SensorData {
-  temp_cpu: number;
-  temp_gpu: number;
-  fan_speed: number;
-  power_draw: number;
-  timestamp: string;
-}
-export interface IsoMetadata {
-  id: string;
-  filename: string;
-  size: number;
-  detectedOs: string;
-  architecture: 'amd64' | 'arm64';
-  format: 'iso' | 'qcow2' | 'vmdk' | 'raw' | 'ova';
-  status: 'available' | 'downloading' | 'failed';
-}
-export interface ConsoleSession {
-  vmid: number;
-  name: string;
-  type: 'noVNC' | 'spice' | 'xtermjs';
-  url: string;
-  token: string;
-}
-export interface KyberConfig {
-  enabled: boolean;
-  keyStrength: 'Level1' | 'Level2' | 'Level3';
-  lastRotation: string;
-}
-export interface AiArchitectRequest {
-  goal: 'Workstation' | 'Gaming' | 'Server' | 'Lab';
-  ramGb: number;
-  storageGb: number;
-}
-export interface AiArchitectResponse {
-  recommendedVms: VmConfig[];
-  zfsConfig: string;
-  cliCommands: string[];
-  reasoning: string;
-  prediction: string;
-}
 export interface ProjectState {
   checklist: boolean[];
   stepPriorities: Record<number, number>;
   storage: StorageConfig;
   vms: VmConfig[];
   nodes: ClusterNode[];
+  fleet: FleetNode[];
+  snapshots: Snapshot[];
+  singularity: SingularityConfig;
   apiConfig: {
     url: string;
     token: string;
@@ -113,18 +90,12 @@ export interface ProjectState {
     net_in: number;
     net_out: number;
   };
-  sensors: SensorData[];
   orchestrationLog: string[];
   codexUnlocked: string[];
-  isoLibrary: IsoMetadata[];
-  visionarySessions: ConsoleSession[];
-  kyber: KyberConfig;
   auth: {
     isAuthenticated: boolean;
-    user: AuthUser | null;
+    user: { id: string; username: string; role: string } | null;
   };
-  usbLabel?: string;
-  isoPath?: string;
   lastUpdated: string;
 }
 export interface ApiResponse<T = unknown> {
