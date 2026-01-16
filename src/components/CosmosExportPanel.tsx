@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Github, FileCode, Terminal, Cloud, RefreshCw, CheckCircle2, Globe, Book, Layout } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GITHUB_WORKFLOW_DEPLOY, ANSIBLE_PROXMOX_DEPLOY, GITHUB_WIKI_TEMPLATE, GALAXY_README_PRO } from '@/lib/cosmos-templates';
+import { GITHUB_WORKFLOW_DEPLOY, ANSIBLE_PROXMOX_DEPLOY, GITHUB_WIKI_TEMPLATE, GALAXY_README_PRO } from '@shared/cosmos-templates';
 import { toast } from 'sonner';
 export function CosmosExportPanel() {
   const [activeFile, setActiveFile] = useState<'workflow' | 'ansible' | 'wiki' | 'readme'>('workflow');
