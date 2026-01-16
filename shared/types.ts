@@ -3,62 +3,27 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
-export interface ConsoleSession {
-  vmid: number;
-  name: string;
-  type: 'noVNC' | 'SPICE';
-  url: string;
-  token: string;
-}
-export interface IsoMetadata {
+export interface CodexItem {
   id: string;
-  filename: string;
-  size: number;
-  detectedOs: string;
-  architecture: 'amd64' | 'arm64' | 'x86';
-  format: 'iso' | 'qcow2' | 'vmdk' | 'raw' | 'ova';
-  status: 'available' | 'processing' | 'failed';
+  category: 'Robust' | 'USB' | 'VM' | 'Visionary' | 'AI' | 'Galaxy';
+  title: string;
+  description: string;
+  complexity: 'Standard' | 'Advanced' | 'Elite' | 'God';
+  cmd?: string;
 }
-export interface KyberConfig {
-  enabled: boolean;
-  keyStrength: 'Level1' | 'Level3' | 'Level5';
-  lastRotation: string;
-}
-export interface ClusterNode {
+export interface AuthUser {
   id: string;
-  name: string;
-  status: 'online' | 'offline';
-  cpu_usage: number;
-  mem_usage: number;
-  ip: string;
-}
-export interface SensorData {
-  temp_cpu: number;
-  temp_gpu: number;
-  fan_speed: number;
-  power_draw: number;
-  timestamp: string;
-}
-export interface ProxmoxHostStats {
-  cpu_usage: number;
-  mem_usage: number;
-  uptime: string;
-  zfs_health: 'ONLINE' | 'DEGRADED' | 'FAULTED';
-  net_in: number;
-  net_out: number;
+  username: string;
+  role: 'admin' | 'guest';
+  token?: string;
 }
 export interface StorageConfig {
   win11: number;
   kali: number;
   fyde: number;
   shared: number;
-}
-export interface ApiConfig {
-  url: string;
-  token: string;
-  node: string;
 }
 export interface VmConfig {
   vmid: number;
@@ -69,35 +34,24 @@ export interface VmConfig {
   hasTpm: boolean;
   gpuPassthrough: boolean;
   status?: VmStatus;
-  ipAddress?: string;
-  tags?: string[];
   node?: string;
-}
-export interface AiArchitectRequest {
-  goal: 'Workstation' | 'Server' | 'Gaming';
-  ramGb: number;
-  storageGb: number;
-  extraNeeds: string[];
-}
-export interface AiArchitectResponse {
-  recommendedVms: VmConfig[];
-  zfsConfig: string;
-  cliCommands: string[];
-  reasoning: string;
-  prediction?: string;
+  tags?: string[];
 }
 export interface ProjectState {
   checklist: boolean[];
   storage: StorageConfig;
   vms: VmConfig[];
-  nodes: ClusterNode[];
-  apiConfig: ApiConfig;
-  hostStats: ProxmoxHostStats;
-  sensors: SensorData[];
+  nodes: any[];
+  apiConfig: any;
+  hostStats: any;
+  sensors: any[];
   orchestrationLog: string[];
-  isoLibrary: IsoMetadata[];
-  visionarySessions: ConsoleSession[];
-  kyber: KyberConfig;
+  codexUnlocked: string[];
+  isSimulatingUsb: boolean;
+  auth: {
+    isAuthenticated: boolean;
+    user: AuthUser | null;
+  };
   usbLabel?: string;
   isoPath?: string;
   lastUpdated: string;

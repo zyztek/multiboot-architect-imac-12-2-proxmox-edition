@@ -10,6 +10,8 @@ export class GlobalDurableObject extends DurableObject {
         if (!current.orchestrationLog) current.orchestrationLog = ["Cluster initialized"];
         if (!current.isoLibrary) current.isoLibrary = [];
         if (!current.visionarySessions) current.visionarySessions = [];
+        if (!current.codexUnlocked) current.codexUnlocked = [];
+        if (!current.auth) current.auth = { isAuthenticated: false, user: null };
         if (!current.kyber) current.kyber = { enabled: false, keyStrength: 'Level1', lastRotation: new Date().toISOString() };
         return current;
       }
@@ -22,6 +24,8 @@ export class GlobalDurableObject extends DurableObject {
         hostStats: this.getMockStats(),
         sensors: [],
         orchestrationLog: ["First boot successful"],
+        codexUnlocked: [],
+        auth: { isAuthenticated: false, user: null },
         isoLibrary: [],
         visionarySessions: [],
         kyber: { enabled: false, keyStrength: 'Level1', lastRotation: new Date().toISOString() },

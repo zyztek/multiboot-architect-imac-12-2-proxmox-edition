@@ -3,7 +3,7 @@ import { enableMapSet } from "immer";
 enableMapSet();
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
@@ -15,6 +15,7 @@ import { DeploymentProtocol } from '@/pages/DeploymentProtocol';
 import { ProxmoxDashboard } from '@/pages/ProxmoxDashboard';
 import { Orchestrator } from '@/pages/Orchestrator';
 import { Visionary } from '@/pages/Visionary';
+import { Universe } from '@/pages/Universe';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -34,12 +35,19 @@ const router = createBrowserRouter([
   { path: "/proxmox", element: <ProxmoxDashboard />, errorElement: <RouteErrorBoundary /> },
   { path: "/orchestrator", element: <Orchestrator />, errorElement: <RouteErrorBoundary /> },
   { path: "/visionary", element: <Visionary />, errorElement: <RouteErrorBoundary /> },
+  { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <RouterProvider router={router} />
+        <React.Suspense fallback={
+          <div className="h-screen w-screen bg-slate-950 flex items-center justify-center">
+             <div className="size-16 border-t-2 border-blue-500 rounded-full animate-spin" />
+          </div>
+        }>
+          <RouterProvider router={router} />
+        </React.Suspense>
       </ErrorBoundary>
     </QueryClientProvider>
   </StrictMode>,
