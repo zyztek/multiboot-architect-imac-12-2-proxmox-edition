@@ -16,8 +16,9 @@ export class GlobalDurableObject extends DurableObject {
       const state = await this.ctx.storage.get("project_state");
       if (state) return state as ProjectState;
       const defaultState: ProjectState = {
-        checklist: new Array(12).fill(false),
+        checklist: new Array(15).fill(false),
         storage: { win11: 200, kali: 100, fyde: 100, shared: 600 },
+        vms: [],
         lastUpdated: new Date().toISOString()
       };
       await this.ctx.storage.put("project_state", defaultState);

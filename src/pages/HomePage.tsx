@@ -2,12 +2,12 @@ import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, HardDrive, ShieldCheck, ArrowRight, Activity, Network, Zap } from 'lucide-react';
+import { Cpu, HardDrive, ArrowRight, Activity, Network, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { ApiResponse, ProjectState } from '@shared/types';
 export function HomePage() {
-  const { data: state } = useQuery({
+  const { data: state, isLoading } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
       const res = await fetch('/api/project-state');
@@ -15,8 +15,18 @@ export function HomePage() {
       return json.data;
     }
   });
-  const isIommuOn = state?.checklist[6] ?? false;
-  const isZfsReady = state?.checklist[7] ?? false;
+  const isIommuOn = state?.checklist?.[6] ?? false;
+  const isZfsReady = state?.checklist?.[7] ?? false;
+  // Storage fallback values
+  const winSize = state?.storage?.win11 ?? 200;
+  const kaliSize = state?.storage?.kali ?? 100;
+  const fydeSize = state?.storage?.fyde ?? 100;
+  const sharedSize = state?.storage?.shared ?? 600;
+  const totalSize = winSize + kaliSize + fydeSize + sharedSize;
+  const getPercent = (val: number) => (val / totalSize) * 100;
+  if (isLoading) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Booting Mission Control...</div>;
+  }
   return (
     <AppLayout container className="bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-8 animate-fade-in">
@@ -44,7 +54,7 @@ export function HomePage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">CPU</span><span className="font-mono text-sm">Core i7-2600</span></div>
               <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">GPU</span><span className="font-mono text-sm text-orange-400">Radeon 6970M</span></div>
-              <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">ZFS Pool</span><Badge variant="secondary" className="text-[10px]">{isZfsReady ? 'ONLINE' : 'DEGRADED'}</Badge></div>
+              <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">ZFS Pool</span><Badge variant="secondary" className={`text-[10px] ${isZfsReady ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>{isZfsReady ? 'ONLINE' : 'PENDING'}</Badge></div>
             </CardContent>
           </Card>
           <Card className="bg-slate-900 border-white/10 text-white shadow-2xl">
@@ -56,16 +66,16 @@ export function HomePage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
-                  <div className="h-full bg-blue-500" style={{ width: '25%' }} />
-                  <div className="h-full bg-emerald-500" style={{ width: '10%' }} />
-                  <div className="h-full bg-orange-500" style={{ width: '10%' }} />
-                  <div className="h-full bg-slate-600" style={{ width: '55%' }} />
+                  <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${getPercent(winSize)}%` }} />
+                  <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${getPercent(kaliSize)}%` }} />
+                  <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${getPercent(fydeSize)}%` }} />
+                  <div className="h-full bg-slate-600 transition-all duration-500" style={{ width: `${getPercent(sharedSize)}%` }} />
                 </div>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-[10px] font-mono">
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Win11 (250GB)</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Kali (100GB)</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /> Fyde (100GB)</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-600" /> Shared (550GB)</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" /> Win11 ({winSize}GB)</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Kali ({kaliSize}GB)</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /> Fyde ({fydeSize}GB)</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-600" /> Shared ({sharedSize}GB)</div>
                 </div>
               </div>
             </CardContent>

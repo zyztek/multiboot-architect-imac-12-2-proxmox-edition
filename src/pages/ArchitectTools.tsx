@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -8,24 +8,55 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { generateScript } from '@/lib/script-generator';
-import { Copy, Terminal, Download, Calculator, HardDrive, Cpu, Shield } from 'lucide-react';
+import { Copy, Terminal, Download, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
-import { ScriptMode, VmConfig } from '@shared/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { ApiResponse, ProjectState, ScriptMode, VmConfig } from '@shared/types';
 export function ArchitectTools() {
+  const queryClient = useQueryClient();
+  const { data: projectState } = useQuery({
+    queryKey: ['project-state'],
+    queryFn: async () => {
+      const res = await fetch('/api/project-state');
+      const json = await res.json() as ApiResponse<ProjectState>;
+      return json.data;
+    }
+  });
+  const mutation = useMutation({
+    mutationFn: async (newState: ProjectState) => {
+      const res = await fetch('/api/project-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newState)
+      });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-state'] });
+      toast.success("Architectural state persisted to cloud");
+    }
+  });
   const [win11, setWin11] = useState(200);
   const [kali, setKali] = useState(100);
   const [fyde, setFyde] = useState(100);
-  const total = 1000;
-  const shared = Math.max(0, total - win11 - kali - fyde);
   const [mode, setMode] = useState<ScriptMode>('usb');
   const [usbDrive, setUsbDrive] = useState("E:");
   const [isoPath, setIsoPath] = useState("C:\\ISOs\\proxmox-ve-8.iso");
   const [diskId, setDiskId] = useState("local-zfs");
-  const vms: VmConfig[] = [
+  useEffect(() => {
+    if (projectState?.storage) {
+      setWin11(projectState.storage.win11);
+      setKali(projectState.storage.kali);
+      setFyde(projectState.storage.fyde);
+    }
+  }, [projectState]);
+  const total = 1000;
+  const shared = Math.max(0, total - win11 - kali - fyde);
+  const vms: VmConfig[] = useMemo(() => [
     { vmid: 100, name: 'Windows11-Prod', cores: 4, memory: 8192, diskId, hasTpm: true, gpuPassthrough: true },
     { vmid: 101, name: 'Kali-Security', cores: 4, memory: 4096, diskId, hasTpm: false, gpuPassthrough: false },
     { vmid: 102, name: 'openFyde-Cloud', cores: 2, memory: 4096, diskId, hasTpm: false, gpuPassthrough: false },
-  ];
+  ], [diskId]);
   const chartData = useMemo(() => [
     { name: 'Windows 11', value: win11, color: '#3b82f6' },
     { name: 'Kali Linux', value: kali, color: '#10b981' },
@@ -39,10 +70,17 @@ export function ArchitectTools() {
     storage: { win11, kali, fyde, shared },
     diskId,
     vms
-  }), [mode, usbDrive, isoPath, win11, kali, fyde, shared, diskId]);
+  }), [mode, usbDrive, isoPath, win11, kali, fyde, shared, diskId, vms]);
   const copyScript = () => {
     navigator.clipboard.writeText(script);
     toast.success("Script copied to clipboard");
+  };
+  const handleSave = () => {
+    if (!projectState) return;
+    mutation.mutate({
+      ...projectState,
+      storage: { win11, kali, fyde, shared }
+    });
   };
   return (
     <AppLayout container className="bg-slate-950">
@@ -104,13 +142,13 @@ export function ArchitectTools() {
                 </div>
               </Tabs>
               <div className="relative mt-4 flex-1 min-h-[300px]">
-                <pre className="absolute inset-0 bg-black/50 p-4 rounded-lg text-[11px] font-mono text-emerald-400/90 overflow-auto border border-white/5">
+                <pre className="absolute inset-0 bg-black/50 p-4 rounded-lg text-[11px] font-mono text-emerald-400/90 overflow-auto border border-white/5 whitespace-pre-wrap">
                   {script}
                 </pre>
                 <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-8 w-8 text-slate-400 hover:text-white" onClick={copyScript}><Copy className="size-4" /></Button>
               </div>
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-500 mt-4" onClick={copyScript}>
-                <Download className="size-4 mr-2" /> Export Configuration
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-500 mt-4" onClick={handleSave} disabled={mutation.isPending}>
+                <Download className="size-4 mr-2" /> {mutation.isPending ? "Persisting..." : "Export Configuration"}
               </Button>
             </CardContent>
           </Card>
