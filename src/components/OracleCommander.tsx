@@ -1,17 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Radio, Terminal } from 'lucide-react';
+import { Mic, Radio, Terminal, Sparkles } from 'lucide-react';
 import { globalVoiceEngine } from '@/lib/voice-engine';
+import { toast } from 'sonner';
 export function OracleCommander() {
   const [isActive, setIsActive] = useState(false);
   const [lastWords, setLastWords] = useState<string | null>(null);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
   useEffect(() => {
-    // Reduced polling frequency to 1000ms for performance stability
+    const handleEvolve = async (prompt: string) => {
+      setIsSynthesizing(true);
+      setLastWords(`Oracle synthesizing: "${prompt}"`);
+      try {
+        await fetch('/api/evolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        toast.info("Vision committed to Evolution Queue");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setTimeout(() => setIsSynthesizing(false), 2000);
+      }
+    };
+    globalVoiceEngine.registerCommand('evolve', () => {
+       setLastWords("Oracle awaits your vision...");
+    });
+    globalVoiceEngine.registerCommand('create protocol', () => {
+       handleEvolve("Create new security protocol");
+    });
     const interval = setInterval(() => {
       const activeState = globalVoiceEngine.isActive();
       setIsActive(activeState);
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      globalVoiceEngine.unregisterCommand('evolve');
+      globalVoiceEngine.unregisterCommand('create protocol');
+    };
   }, []);
   const handleToggle = () => {
     if (isActive) {
@@ -21,7 +48,7 @@ export function OracleCommander() {
     } else {
       globalVoiceEngine.start();
       setIsActive(true);
-      setLastWords("Listening for Singularity protocols...");
+      setLastWords("Oracle Listening... Say 'evolve' to begin.");
     }
   };
   return (
@@ -35,8 +62,10 @@ export function OracleCommander() {
             className="glass-dark border border-blue-500/30 px-4 py-2 rounded-2xl shadow-glow mb-2"
           >
             <div className="flex items-center gap-2">
-              <Terminal className="size-3 text-blue-400" />
-              <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest italic">{lastWords}</span>
+              {isSynthesizing ? <Sparkles className="size-3 text-purple-400 animate-spin" /> : <Terminal className="size-3 text-blue-400" />}
+              <span className={`text-[10px] font-mono uppercase tracking-widest italic ${isSynthesizing ? 'text-purple-400' : 'text-blue-400'}`}>
+                {lastWords}
+              </span>
             </div>
           </motion.div>
         )}
@@ -60,7 +89,7 @@ export function OracleCommander() {
               exit={{ scale: 0 }}
               className="relative"
             >
-              <Radio className="size-6 text-white animate-pulse" />
+              <Radio className={`size-6 text-white ${isSynthesizing ? 'animate-bounce' : 'animate-pulse'}`} />
               <motion.div
                 animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -78,14 +107,6 @@ export function OracleCommander() {
             </motion.div>
           )}
         </AnimatePresence>
-        {isActive && (
-          <div className="absolute -top-1 -right-1">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 shadow-glow"></span>
-            </span>
-          </div>
-        )}
       </motion.button>
     </div>
   );
