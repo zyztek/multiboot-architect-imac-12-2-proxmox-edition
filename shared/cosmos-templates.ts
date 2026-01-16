@@ -16,7 +16,7 @@ jobs:
       - name: Deploy Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: \${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
 `;
 export const DEPENDABOT_CONFIG = `version: 2
@@ -41,7 +41,7 @@ To enable full automation, configure the following secrets in GitHub Repository 
 ## Usage in Workflows
 \`\`\`yaml
 env:
-  PVE_TOKEN: ${{ secrets.PROXMOX_TOKEN }}
+  PVE_TOKEN: \${{ secrets.PROXMOX_TOKEN }}
 \`\`\`
 `;
 export const ANSIBLE_PROXMOX_DEPLOY = `---

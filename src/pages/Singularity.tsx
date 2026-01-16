@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { History, Share2, Binary, Radio, KeyRound, ShieldCheck, Globe, Zap, Cpu, Activity, Server } from 'lucide-react';
+import { History, Binary, KeyRound, ShieldCheck, Activity, Zap } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -90,17 +90,17 @@ export function Singularity() {
                   <span className="text-xs font-mono text-blue-400">{completedCount}/300</span>
                </CardHeader>
                <CardContent className="p-6">
-                  <div className="grid grid-cols-15 md:grid-cols-30 gap-1">
+                  <div className="grid grid-cols-15 md:grid-cols-30 gap-1.5">
                      {Array.from({ length: 300 }).map((_, i) => (
                        <motion.div
                          key={i}
                          initial={{ opacity: 0.1 }}
-                         animate={{ 
+                         animate={{
                            opacity: checklist[i] ? 1 : 0.2,
                            backgroundColor: checklist[i] ? '#3b82f6' : '#1e293b',
                            boxShadow: checklist[i] ? '0 0 8px rgba(59, 130, 246, 0.5)' : 'none'
                          }}
-                         className="aspect-square rounded-[1px] cursor-help"
+                         className="aspect-square rounded-[1px] min-h-[4px]"
                        />
                      ))}
                   </div>
@@ -133,7 +133,7 @@ export function Singularity() {
             </TabsContent>
             <TabsContent value="timebend" className="pt-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {timebend.map((h, i) => (
+                {timebend.map((h) => (
                   <Card key={h.id} className="glass-dark border-white/10 hover:border-blue-500/40 transition-all group overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/20 group-hover:bg-blue-500 transition-colors" />
                     <div className="p-4 flex items-center justify-between">

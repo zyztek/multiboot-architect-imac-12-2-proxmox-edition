@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { HomePage } from '@/pages/HomePage';
@@ -26,38 +26,44 @@ const router = createBrowserRouter([
 export function InfinityKernel() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'hydrating' | 'degraded' | 'stable'>('hydrating');
   const [retryCount, setRetryCount] = useState(0);
-  useEffect(() => {
-    let active = true;
-    const maxRetries = 5;
-    const syncState = async () => {
-      try {
-        const res = await fetch('/api/project-state');
-        if (res.ok && active) {
+  const syncState = useCallback(async (active: boolean) => {
+    try {
+      const res = await fetch('/api/project-state');
+      if (res.ok && active) {
+        const json = await res.json();
+        if (json.success) {
           setSyncStatus('stable');
         } else {
-          throw new Error("Handshake failed");
+          throw new Error("Handshake declined");
         }
-      } catch (e) {
-        if (!active) return;
-        if (retryCount < maxRetries) {
-          setRetryCount(prev => prev + 1);
-          const delay = Math.pow(2, retryCount) * 500;
-          console.warn(`[INFINITY KERNEL]: Sync retry ${retryCount + 1}/${maxRetries} in ${delay}ms`);
-          setTimeout(syncState, delay);
-        } else {
-          console.error("[INFINITY KERNEL]: Failed to hydrate kernel state. Engaging Degraded Mode.");
-          setSyncStatus('degraded');
-        }
+      } else {
+        throw new Error("Network unreachable");
       }
-    };
-    syncState();
-    return () => { active = false; };
+    } catch (e) {
+      if (!active) return;
+      if (retryCount < 5) {
+        const nextRetry = retryCount + 1;
+        setRetryCount(nextRetry);
+        const delay = Math.pow(2, retryCount) * 500;
+        console.warn(`[INFINITY KERNEL]: Sync retry ${nextRetry}/5 in ${delay}ms`);
+        setTimeout(() => syncState(active), delay);
+      } else {
+        console.error("[INFINITY KERNEL]: Sync failure. Engaging Degraded Mode.");
+        setSyncStatus('degraded');
+      }
+    }
   }, [retryCount]);
+  useEffect(() => {
+    let active = true;
+    syncState(active);
+    return () => { active = false; };
+  }, [syncState]);
   return (
     <>
       <AnimatePresence>
-        {(syncStatus === 'hydrating') && (
+        {syncStatus === 'hydrating' && (
           <motion.div
+            key="kernel-splash"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[999] bg-slate-950 flex flex-col items-center justify-center gap-6"
@@ -77,10 +83,12 @@ export function InfinityKernel() {
       <div className="relative h-full w-full">
         {syncStatus === 'degraded' && (
           <div className="fixed top-0 left-0 right-0 z-[1000] bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest py-1 flex items-center justify-center gap-2">
-            <ShieldAlert className="size-3" /> Degraded Mode Active: Local Mirror Only
+            <ShieldAlert className="size-3" /> Degraded Mode Active: Kernel Out of Sync
           </div>
         )}
-        <RouterProvider router={router} />
+        {(syncStatus === 'stable' || syncStatus === 'degraded') && (
+          <RouterProvider router={router} />
+        )}
       </div>
     </>
   );
