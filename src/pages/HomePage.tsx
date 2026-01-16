@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Activity, Zap, Thermometer, Box, Orbit, Mic, History, Calendar, ShieldCheck } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { Progress } from '@/components/ui/progress';
+import { Activity, Zap, Orbit, Mic, History, ShieldAlert, Cpu, Sparkles, Wand2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { globalVoiceEngine } from '@/lib/voice-engine';
-import type { ApiResponse, ProjectState } from '@shared/types';
+import type { ApiResponse, ProjectState, OracleMetrics } from '@shared/types';
 export function HomePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [timelineIndex, setTimelineIndex] = useState(100);
   const { data: state } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
@@ -21,138 +21,131 @@ export function HomePage() {
       const json = await res.json() as ApiResponse<ProjectState>;
       return json.data;
     },
-    refetchInterval: 5000
+    refetchInterval: 3000
+  });
+  const { data: oracle } = useQuery({
+    queryKey: ['oracle-predict'],
+    queryFn: async () => {
+      const res = await fetch('/api/oracle/predict', { method: 'POST' });
+      const json = await res.json() as ApiResponse<OracleMetrics>;
+      return json.data;
+    },
+    refetchInterval: 10000
+  });
+  const singularityMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/singularity/one-click', { method: 'POST' });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("SINGULARITY THRESHOLD ACHIEVED: 300 Primitives Online");
+      queryClient.invalidateQueries({ queryKey: ['project-state'] });
+    }
   });
   useEffect(() => {
-    globalVoiceEngine.registerCommand('singularity', () => {
-      navigate('/singularity');
-      toast.success("Voice Command: Navigating to Singularity");
-    });
-    globalVoiceEngine.registerCommand('protocol', () => {
-      navigate('/protocol');
-      toast.success("Voice Command: Opening Deployment Protocol");
-    });
+    globalVoiceEngine.registerCommand('singularity', () => navigate('/singularity'));
+    globalVoiceEngine.registerCommand('revert', () => toast.info("Timebend Mirror Initialized"));
   }, [navigate]);
-  const vms = state?.vms ?? [];
-  const snapshots = state?.snapshots ?? [];
   const checklist = state?.checklist ?? [];
-  const totalSteps = checklist.length || 300;
-  const completedSteps = checklist.filter(Boolean).length;
-  const toggleVoice = () => {
-    if (!isVoiceActive) {
-      globalVoiceEngine.start();
-      setIsVoiceActive(true);
-      toast.info("Voice Codex Active: Listen for commands...");
-    } else {
-      globalVoiceEngine.stop();
-      setIsVoiceActive(false);
-      toast.success("Voice Engine Standby");
-    }
-  };
+  const completed = checklist.filter(Boolean).length;
+  const progress = (completed / 300) * 100;
   return (
     <AppLayout className="bg-slate-950 text-slate-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-8 md:py-10 lg:py-12 space-y-12 relative">
-          <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-glow-lg">
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent)]" />
-             <div className="relative w-full h-full flex items-center justify-center">
-                {vms.map((vm, i) => {
-                  const angle = i * 137.5; // Golden ratio based distribution
-                  const radiusX = 180 + (i * 10);
-                  const radiusY = 120 + (i * 5);
-                  return (
-                    <motion.div
-                      key={vm.vmid}
-                      animate={{
-                        rotate: 360,
-                        x: [
-                          radiusX * Math.cos(angle * (Math.PI / 180)), 
-                          -radiusX * Math.cos(angle * (Math.PI / 180)), 
-                          radiusX * Math.cos(angle * (Math.PI / 180))
-                        ],
-                        y: [
-                          radiusY * Math.sin(angle * (Math.PI / 180)), 
-                          -radiusY * Math.sin(angle * (Math.PI / 180)), 
-                          radiusY * Math.sin(angle * (Math.PI / 180))
-                        ],
-                      }}
-                      transition={{
-                        rotate: { duration: 25 + i * 5, repeat: Infinity, ease: "linear" },
-                        x: { duration: 12 + i, repeat: Infinity, ease: "easeInOut" },
-                        y: { duration: 10 + i, repeat: Infinity, ease: "easeInOut" }
-                      }}
-                      className="absolute"
-                    >
-                      <div className="p-3 glass-dark border-purple-500/20 rounded-xl flex flex-col items-center gap-1 shadow-2xl backdrop-blur-3xl">
-                        <Box className="size-5 text-purple-400" />
-                        <span className="text-[10px] font-mono text-white/80">{vm.name}</span>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-                <div className="center flex-col z-10 text-center space-y-2">
+        <div className="py-8 md:py-10 lg:py-12 space-y-10 relative">
+          {/* GALAXY TREE VISUALIZATION */}
+          <div className="relative h-[500px] w-full flex items-center justify-center overflow-hidden rounded-[40px] border border-white/10 bg-black/60 shadow-glass">
+             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent)]" />
+             {/* Infinity Nodes */}
+             <div className="absolute inset-0">
+                {Array.from({ length: 150 }).map((_, i) => (
                   <motion.div
-                    animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="size-32 rounded-full bg-purple-600/20 border-2 border-purple-500/50 flex items-center justify-center backdrop-blur-3xl"
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ 
+                      opacity: [0.2, 0.5, 0.2],
+                      scale: [1, 1.2, 1],
+                      x: Math.random() * 1000 - 500,
+                      y: Math.random() * 800 - 400
+                    }}
+                    transition={{ duration: 10 + Math.random() * 20, repeat: Infinity }}
+                    className="absolute size-1 bg-blue-500/40 rounded-full blur-[1px]"
+                  />
+                ))}
+             </div>
+             <div className="relative z-10 flex flex-col items-center text-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                  className="size-80 border border-white/5 rounded-full flex items-center justify-center relative"
+                >
+                  <div className="absolute inset-0 border-t-2 border-blue-500/30 rounded-full animate-spin" />
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="size-48 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-2 border-white/10 flex items-center justify-center backdrop-blur-3xl shadow-glow-lg cursor-pointer"
+                    onClick={() => navigate('/singularity')}
                   >
-                    <Orbit className="size-16 text-purple-400 animate-spin-slow" />
+                    <Orbit className="size-20 text-blue-400 floating" />
                   </motion.div>
-                  <h1 className="text-6xl font-display font-black tracking-tighter text-white uppercase italic">Singularity Brain</h1>
-                  <p className="text-purple-400 font-mono text-xs uppercase tracking-[0.5em]">{completedSteps}/{totalSteps} Protocols Synchronized</p>
+                </motion.div>
+                <div className="mt-8 space-y-2">
+                  <h1 className="text-7xl font-black tracking-tighter uppercase italic bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-500">Galaxy Core</h1>
+                  <p className="text-blue-400 font-mono text-[10px] tracking-[0.6em] uppercase">Infinity Robust Architecture v1.0</p>
                 </div>
              </div>
-             <div className="absolute top-4 right-4">
-                <Button
-                  variant="outline"
-                  onClick={toggleVoice}
-                  className={`h-10 px-4 gap-2 border-white/10 ${isVoiceActive ? 'bg-purple-600 border-purple-400 animate-pulse' : 'bg-black/40'}`}
+             <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+                <div className="space-y-4 w-64">
+                   <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
+                      <span>Sync Integrity</span>
+                      <span>{progress.toFixed(1)}%</span>
+                   </div>
+                   <Progress value={progress} className="h-1 bg-white/5" />
+                </div>
+                <Button 
+                  onClick={() => singularityMutation.mutate()}
+                  disabled={singularityMutation.isPending || progress >= 100}
+                  className="bg-blue-600 hover:bg-blue-500 h-14 px-8 rounded-full text-xs font-black uppercase tracking-widest shadow-blue-500/20 shadow-lg"
                 >
-                  <Mic className={`size-4 ${isVoiceActive ? 'text-white' : 'text-purple-400'}`} />
-                  <span className="text-[10px] font-bold uppercase">{isVoiceActive ? 'VOICE LISTENING' : 'VOICE CODEX'}</span>
+                  <Sparkles className="size-4 mr-2" /> One-Click Singularity
                 </Button>
              </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="glass-dark border-white/10 text-white">
-              <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2 text-rose-400"><Thermometer className="size-4" /> Thermal Singularity</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                 <div className="text-3xl font-bold font-mono">42.4°C</div>
-                 <p className="text-[10px] text-slate-500">Cluster Avg. Delta: +1.2C</p>
-                 <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-rose-500" initial={{ width: 0 }} animate={{ width: '42%' }} />
-                 </div>
-              </CardContent>
-            </Card>
-            <Card className="glass-dark border-purple-500/30 bg-purple-600/5 text-white">
-              <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2 text-purple-400"><Zap className="size-4" /> Hive Potential</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
-                 <div className="text-3xl font-bold font-mono">94.8%</div>
-                 <p className="text-[10px] text-slate-500">Cross-Node Throughput: 42 Gbps</p>
-                 <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold"><ShieldCheck className="size-3" /> SWARM INTEGRITY: HIGH</div>
-              </CardContent>
-            </Card>
-            <Card className="glass-dark border-blue-500/30 bg-blue-600/5 text-white">
-              <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2 text-blue-400"><History className="size-4" /> Time Mirror</CardTitle></CardHeader>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="glass-dark border-white/10 text-white col-span-1">
+              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase text-slate-500 flex items-center gap-2"><History className="size-3" /> Timebend Mirror</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                 <div className="text-[10px] text-slate-400 leading-tight bg-black/30 p-2 rounded border border-white/5">
-                    Showing Snapshot: <b>{snapshots[0]?.label || 'Initial'}</b>
-                 </div>
-                 <Slider value={[timelineIndex]} onValueChange={(v) => setTimelineIndex(v[0])} max={100} className="py-2" />
+                 <div className="text-2xl font-black font-mono">-{state?.timebend.length ?? 0}s</div>
+                 <p className="text-[9px] text-slate-500 uppercase">Recursion Points Active</p>
+                 <Button variant="outline" size="sm" className="w-full h-7 text-[9px] border-white/5 bg-white/5" onClick={() => navigate('/singularity')}>Time-Travel</Button>
               </CardContent>
             </Card>
-          </div>
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-             <Link to="/singularity" className="flex-shrink-0 w-64 p-6 glass-dark border-purple-500/30 rounded-2xl hover:bg-purple-600/10 transition-all group ring-1 ring-purple-500/20 shadow-glow">
-                <Orbit className="size-8 text-purple-500 mb-2 group-hover:rotate-180 transition-transform duration-1000" />
-                <h3 className="font-bold text-sm text-white">Singularity View</h3>
-                <p className="text-[10px] text-purple-400 uppercase mt-1">Swarm & AR Control</p>
-             </Link>
-             <Link to="/universe" className="flex-shrink-0 w-64 p-6 glass-dark border-blue-500/30 rounded-2xl hover:bg-blue-600/10 transition-all group">
-                <Calendar className="size-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
-                <h3 className="font-bold text-sm text-white">Universe Codex</h3>
-                <p className="text-[10px] text-blue-400 uppercase mt-1">{totalSteps} Technical Primitives</p>
-             </Link>
+            <Card className="glass-dark border-orange-500/30 bg-orange-500/5 text-white col-span-2">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-[10px] uppercase text-orange-400 flex items-center gap-2"><ShieldAlert className="size-3" /> Oracle Chaos Prediction</CardTitle>
+                <Badge variant="outline" className="text-[8px] border-orange-500/30 text-orange-400">STABILITY: {99 - (oracle?.chaosProbability ?? 0) * 100}%</Badge>
+              </CardHeader>
+              <CardContent className="grid grid-cols-3 gap-4">
+                 <div className="space-y-1">
+                    <span className="text-[9px] text-slate-500 uppercase">Thermal Saturation</span>
+                    <div className="text-lg font-bold font-mono text-orange-300">{(oracle?.thermalSaturation ?? 0).toFixed(1)}°C</div>
+                 </div>
+                 <div className="space-y-1">
+                    <span className="text-[9px] text-slate-500 uppercase">Driver Entropy</span>
+                    <div className="text-lg font-bold font-mono text-orange-300">{(oracle?.chaosProbability ?? 0).toFixed(4)}</div>
+                 </div>
+                 <div className="space-y-1">
+                    <span className="text-[9px] text-slate-500 uppercase">Cloud Cost</span>
+                    <div className="text-lg font-bold font-mono text-orange-300">${oracle?.costEstimate ?? 0}/mo</div>
+                 </div>
+              </CardContent>
+            </Card>
+            <Card className="glass-dark border-blue-500/30 bg-blue-500/5 text-white col-span-1">
+              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase text-blue-400 flex items-center gap-2"><Cpu className="size-3" /> Infinity Kernel</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                 <div className="text-2xl font-black font-mono">LOCKED</div>
+                 <div className="flex items-center gap-2 text-[10px] text-blue-400 font-bold"><Wand2 className="size-3 animate-pulse" /> WAITING FOR SINGULARITY</div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
