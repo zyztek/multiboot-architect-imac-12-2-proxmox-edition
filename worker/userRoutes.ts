@@ -17,16 +17,24 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.post('/api/oracle/predict', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         const state = await stub.getProjectState();
+        // Ensure robust return even if calculations are tricky
         const metrics: OracleMetrics = {
-            chaosProbability: Math.random() * 0.15,
-            thermalSaturation: state.hostStats.cpu_usage * 0.8 + 20,
-            instabilityWarnings: state.hostStats.cpu_usage > 80 ? ["AMD Driver Latency Spike Detected"] : [],
-            costEstimate: state.vms.length * 45,
-            efficiencyScore: 94.2
+            chaosProbability: Math.random() * 0.1,
+            thermalSaturation: (state?.hostStats?.cpu_usage || 0) * 0.8 + 35,
+            instabilityWarnings: (state?.hostStats?.cpu_usage || 0) > 85 ? ["Thermal Throttling Imminent"] : [],
+            costEstimate: (state?.vms?.length || 0) * 15.5,
+            efficiencyScore: 94.8
         };
-        state.oracleLog.push(`Prediction @ ${new Date().toLocaleTimeString()}: ${metrics.chaosProbability.toFixed(4)} Entropy`);
-        await stub.updateProjectState(state);
-        return c.json({ success: true, data: metrics });
+        if (state) {
+            state.oracleLog = (state.oracleLog || []).concat([`Prediction update: entropy level ${metrics.chaosProbability.toFixed(5)}`]).slice(-20);
+            await stub.updateProjectState(state);
+        }
+        return c.json({ success: true, data: metrics } satisfies ApiResponse<OracleMetrics>);
+    });
+    app.post('/api/cosmos/export', async (c) => {
+        const { target } = await c.req.json() as { target: string };
+        // Simulation of cloud export
+        return c.json({ success: true, data: { status: 'synced', target, timestamp: new Date().toISOString() } });
     });
     app.post('/api/singularity/one-click', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));

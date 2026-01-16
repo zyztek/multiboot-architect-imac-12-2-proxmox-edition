@@ -2,7 +2,7 @@ import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
 enableMapSet();
 import React, { StrictMode, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -17,18 +17,18 @@ import { Orchestrator } from '@/pages/Orchestrator';
 import { Visionary } from '@/pages/Visionary';
 import { Universe } from '@/pages/Universe';
 import { Singularity } from '@/pages/Singularity';
-// PWA Service Worker Registration
-if ('serviceWorker' in navigator) {
+// PWA Service Worker Registration with silent failure for dev/missing assets
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.warn('PWA Service Worker Registration Failed', err);
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Silence warning as sw.js might not exist in all environments
     });
   });
 }
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2000,
+      staleTime: 5000,
       refetchOnWindowFocus: true,
       retry: 3,
     },
@@ -45,24 +45,29 @@ const router = createBrowserRouter([
   { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
   { path: "/singularity", element: <Singularity />, errorElement: <RouteErrorBoundary /> },
 ]);
-export function InfinityKernel() {
+function InfinityKernel() {
   useEffect(() => {
-    // Global Singularity Sync
     const syncState = async () => {
       try {
-        const res = await fetch('/api/project-state');
-        if (res.ok) {
-           // Success log is fine for debugging
-        }
+        await fetch('/api/project-state');
       } catch (e) {
-        console.error("[INFINITY KERNEL]: Sync Failure", e);
+        console.warn("[INFINITY KERNEL]: Initial sync failed", e);
       }
     };
     syncState();
   }, []);
   return <RouterProvider router={router} />;
 }
-createRoot(document.getElementById('root')!).render(
+// Singleton pattern for React Root to prevent double-initialization errors in HMR
+const container = document.getElementById('root')!;
+let root: Root;
+if ((globalThis as any).__REACT_ROOT__) {
+  root = (globalThis as any).__REACT_ROOT__;
+} else {
+  root = createRoot(container);
+  (globalThis as any).__REACT_ROOT__ = root;
+}
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
