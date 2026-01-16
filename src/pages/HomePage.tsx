@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Cpu, Activity, Zap, ShieldCheck, Thermometer, Box, TrendingUp, Sparkles, Orbit } from 'lucide-react';
+import { Activity, Zap, Thermometer, Box, TrendingUp, Sparkles, Orbit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
 import type { ApiResponse, ProjectState, SensorData } from '@shared/types';
 export function HomePage() {
   const { data: state } = useQuery({
@@ -59,7 +57,7 @@ export function HomePage() {
                 </motion.div>
               ))}
               <div className="center flex-col z-10 text-center space-y-2">
-                <motion.div 
+                <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 4, repeat: Infinity }}
                   className="size-24 rounded-full bg-blue-600/20 border border-blue-500/50 flex items-center justify-center backdrop-blur-3xl"
@@ -91,8 +89,8 @@ export function HomePage() {
                 </div>
               </div>
               <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-rose-500" 
+                <motion.div
+                  className="h-full bg-rose-500"
                   animate={{ width: `${(sensors?.temp_cpu ?? 0)}%` }}
                 />
               </div>
