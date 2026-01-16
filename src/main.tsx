@@ -15,12 +15,21 @@ import { HomePage } from '@/pages/HomePage'
 import { IntelligenceReport } from '@/pages/IntelligenceReport'
 import { ArchitectTools } from '@/pages/ArchitectTools'
 import { DeploymentProtocol } from '@/pages/DeploymentProtocol'
-const queryClient = new QueryClient();
+import { ProxmoxDashboard } from '@/pages/ProxmoxDashboard'
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 const router = createBrowserRouter([
   { path: "/", element: <HomePage />, errorElement: <RouteErrorBoundary /> },
   { path: "/report", element: <IntelligenceReport />, errorElement: <RouteErrorBoundary /> },
   { path: "/tools", element: <ArchitectTools />, errorElement: <RouteErrorBoundary /> },
   { path: "/protocol", element: <DeploymentProtocol />, errorElement: <RouteErrorBoundary /> },
+  { path: "/proxmox", element: <ProxmoxDashboard />, errorElement: <RouteErrorBoundary /> },
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

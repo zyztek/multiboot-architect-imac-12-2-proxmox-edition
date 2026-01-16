@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApiResponse, ProjectState } from '@shared/types';
-import { CheckCircle2, Circle, HelpCircle } from 'lucide-react';
+import { CheckCircle2, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 const STEPS = [
   { id: 0, title: "Download Proxmox VE 8.x ISO", category: "Pre-Flight", desc: "Download the latest Proxmox VE 8.1+ ISO from proxmox.com" },
@@ -23,7 +23,12 @@ const STEPS = [
   { id: 11, title: "Shared: Bridge ZFS Dataset via SMB", category: "Configuration", desc: "Enable the Proxmox SMB server for cross-OS data access." },
   { id: 12, title: "GPU: Configure VFIO GPU Passthrough", category: "Optimization", desc: "Bind 01:00.0 (Radeon 6970M) to the Windows 11 VM." },
   { id: 13, title: "OCLP: Post-Install Root Patches", category: "Optimization", desc: "Use OpenCore Legacy Patcher within macOS VMs if needed for drivers." },
-  { id: 14, title: "Backup: Schedule Daily PBS Jobs", category: "Reliability", desc: "Automate backups to an external disk or NAS." }
+  { id: 14, title: "Backup: Schedule Daily PBS Jobs", category: "Reliability", desc: "Automate backups to an external disk or NAS." },
+  { id: 15, title: "Security: Hardened SSH & Keys", category: "Hardening", desc: "Disable root password login; enforce RSA/ED25519 keys." },
+  { id: 16, title: "API: Generate PVE API Tokens", category: "Hypervisor", desc: "Create a restricted user/token for Mission Control sync." },
+  { id: 17, title: "Remote: Deploy Guacamole Container", category: "Access", desc: "Install Docker and oznu/guacamole for browser access." },
+  { id: 18, title: "Networking: Install Tailscale VPN", category: "Access", desc: "Mesh VPN for secure access to PVE from anywhere." },
+  { id: 19, title: "Reliability: Automated ZFS Scrubs", category: "Maintenance", desc: "Ensure pool health via monthly automated scrubs." },
 ];
 export function DeploymentProtocol() {
   const queryClient = useQueryClient();
@@ -50,9 +55,8 @@ export function DeploymentProtocol() {
   });
   const toggleStep = (index: number) => {
     if (!projectState) return;
-    const newChecklist = [...projectState.checklist];
-    // Ensure array is big enough
-    while(newChecklist.length < STEPS.length) newChecklist.push(false);
+    const newChecklist = [...(projectState.checklist ?? [])];
+    while(newChecklist.length <= index) newChecklist.push(false);
     newChecklist[index] = !newChecklist[index];
     mutation.mutate({ ...projectState, checklist: newChecklist });
   };
@@ -61,26 +65,24 @@ export function DeploymentProtocol() {
   if (isLoading) return <div className="p-8 text-white center h-screen">Loading deployment pipeline...</div>;
   return (
     <AppLayout container className="bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-8 max-w-4xl mx-auto">
-        <div className="flex flex-col gap-6">
-          <div className="border-b border-white/10 pb-6">
-            <h1 className="text-4xl font-display font-bold text-white tracking-tight">Deployment Protocol</h1>
-            <p className="text-slate-400 mt-2">Interactive 15-step installation pipeline for the iMac 12,2 project.</p>
-          </div>
-          <Card className="bg-slate-900 border-white/10 p-6 shadow-glow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm font-medium text-slate-300">Phase Completion</span>
-              <span className="text-sm font-mono text-emerald-400">{Math.round(progressPercent)}%</span>
-            </div>
-            <Progress value={progressPercent} className="h-2 bg-slate-800" />
-          </Card>
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+        <div className="border-b border-white/10 pb-6">
+          <h1 className="text-4xl font-display font-bold text-white tracking-tight">Deployment Protocol</h1>
+          <p className="text-slate-400 mt-2">Interactive 20-step installation pipeline for the iMac 12,2 project.</p>
         </div>
+        <Card className="bg-slate-900 border-white/10 p-6 shadow-glow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-slate-300">Phase Completion</span>
+            <span className="text-sm font-mono text-emerald-400">{Math.round(progressPercent)}%</span>
+          </div>
+          <Progress value={progressPercent} className="h-2 bg-slate-800" />
+        </Card>
         <TooltipProvider>
           <div className="space-y-3">
             {STEPS.map((step) => {
               const isDone = projectState?.checklist?.[step.id];
               return (
-                <div key={step.id} className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${isDone ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900 border-white/10 text-white hover:border-white/20'}`}>
+                <div key={step.id} className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${isDone ? 'bg-emerald-500/5 border-emerald-500/20 opacity-80' : 'bg-slate-900 border-white/10 text-white hover:border-white/20'}`}>
                   <Checkbox
                     id={`step-${step.id}`}
                     checked={isDone}
@@ -99,17 +101,12 @@ export function DeploymentProtocol() {
                     </div>
                     <div className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">{step.category}</div>
                   </div>
-                  {isDone && <CheckCircle2 className="size-5 text-emerald-500 animate-in fade-in zoom-in duration-300" />}
+                  {isDone && <CheckCircle2 className="size-5 text-emerald-500" />}
                 </div>
               );
             })}
           </div>
         </TooltipProvider>
-        <div className="text-center pt-8 border-t border-white/5">
-          <p className="text-[10px] text-slate-600 font-mono">
-            * Persistent state synced to Cloudflare Durable Objects. Last updated: {projectState?.lastUpdated ? new Date(projectState.lastUpdated).toLocaleString() : 'Never'}
-          </p>
-        </div>
       </div>
     </AppLayout>
   );

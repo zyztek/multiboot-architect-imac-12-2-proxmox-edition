@@ -2,32 +2,50 @@ import { DurableObject } from "cloudflare:workers";
 import type { DemoItem, ProjectState } from '@shared/types';
 import { MOCK_ITEMS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
-    async getCounterValue(): Promise<number> {
-      const value = (await this.ctx.storage.get("counter_value")) || 0;
-      return value as number;
-    }
-    async increment(amount = 1): Promise<number> {
-      let value: number = (await this.ctx.storage.get("counter_value")) || 0;
-      value += amount;
-      await this.ctx.storage.put("counter_value", value);
-      return value;
-    }
     async getProjectState(): Promise<ProjectState> {
       const state = await this.ctx.storage.get("project_state");
-      if (state) return state as ProjectState;
+      if (state) {
+        const current = state as ProjectState;
+        // Migration/Consistency Check
+        if (!current.apiConfig) current.apiConfig = { url: '', token: '', node: 'pve' };
+        if (!current.hostStats) current.hostStats = this.getMockStats();
+        return current;
+      }
       const defaultState: ProjectState = {
-        checklist: new Array(15).fill(false),
+        checklist: new Array(20).fill(false),
         storage: { win11: 200, kali: 100, fyde: 100, shared: 600 },
         vms: [],
+        apiConfig: { url: '', token: '', node: 'pve' },
+        hostStats: this.getMockStats(),
         lastUpdated: new Date().toISOString()
       };
       await this.ctx.storage.put("project_state", defaultState);
       return defaultState;
     }
+    private getMockStats() {
+      return {
+        cpu_usage: Math.random() * 40,
+        mem_usage: 45.2,
+        uptime: "12 days, 4 hours",
+        zfs_health: 'ONLINE' as const,
+        net_in: 124.5,
+        net_out: 88.2
+      };
+    }
     async updateProjectState(state: ProjectState): Promise<ProjectState> {
       const updated = { ...state, lastUpdated: new Date().toISOString() };
       await this.ctx.storage.put("project_state", updated);
       return updated;
+    }
+    async updateHostStats(): Promise<ProjectState> {
+      const state = await this.getProjectState();
+      state.hostStats = {
+        ...state.hostStats,
+        cpu_usage: Math.random() * 100,
+        net_in: state.hostStats.net_in + Math.random() * 10,
+        net_out: state.hostStats.net_out + Math.random() * 10
+      };
+      return await this.updateProjectState(state);
     }
     async getDemoItems(): Promise<DemoItem[]> {
       const items = await this.ctx.storage.get("demo_items");
@@ -38,18 +56,6 @@ export class GlobalDurableObject extends DurableObject {
     async addDemoItem(item: DemoItem): Promise<DemoItem[]> {
       const items = await this.getDemoItems();
       const updatedItems = [...items, item];
-      await this.ctx.storage.put("demo_items", updatedItems);
-      return updatedItems;
-    }
-    async updateDemoItem(id: string, updates: Partial<Omit<DemoItem, 'id'>>): Promise<DemoItem[]> {
-      const items = await this.getDemoItems();
-      const updatedItems = items.map(item => item.id === id ? { ...item, ...updates } : item);
-      await this.ctx.storage.put("demo_items", updatedItems);
-      return updatedItems;
-    }
-    async deleteDemoItem(id: string): Promise<DemoItem[]> {
-      const items = await this.getDemoItems();
-      const updatedItems = items.filter(item => item.id !== id);
       await this.ctx.storage.put("demo_items", updatedItems);
       return updatedItems;
     }

@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, PenTool, CheckSquare, Settings, Terminal } from "lucide-react";
+import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -35,6 +35,11 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={location.pathname === "/proxmox"}>
+                <Link to="/proxmox"><LayoutDashboard className="size-4" /> <span>Proxmox Dashboard</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={location.pathname === "/report"}>
                 <Link to="/report"><BookOpen className="size-4" /> <span>Intelligence Report</span></Link>
               </SidebarMenuButton>
@@ -53,7 +58,7 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-white/5">
-        <div className="text-[10px] text-slate-500 font-mono text-center">v1.0.0-PROXMOX-EDITION</div>
+        <div className="text-[10px] text-slate-500 font-mono text-center">v1.2.0-PROXMOX-EDITION</div>
       </SidebarFooter>
     </Sidebar>
   );
