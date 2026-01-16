@@ -5,23 +5,30 @@ export class GlobalDurableObject extends DurableObject {
     async getProjectState(): Promise<ProjectState> {
       const state = await this.ctx.storage.get("project_state");
       const defaultState = this.getInitialState();
-      if (state) {
-        const current = state as ProjectState;
-        // Migration logic for 300 checklist items
-        if (!current.checklist || current.checklist.length < 300) {
-          const newChecklist = new Array(300).fill(false);
-          (current.checklist || []).forEach((v, i) => { if(i < 300) newChecklist[i] = v; });
-          current.checklist = newChecklist;
-        }
-        // Ensure new structures exist
-        if (!current.fleet) current.fleet = MOCK_FLEET;
-        if (!current.snapshots) current.snapshots = MOCK_SNAPSHOTS;
-        if (!current.singularity) current.singularity = defaultState.singularity;
-        if (!current.auth) current.auth = defaultState.auth;
-        return current;
+      if (!state) {
+        await this.ctx.storage.put("project_state", defaultState);
+        return defaultState;
       }
-      await this.ctx.storage.put("project_state", defaultState);
-      return defaultState;
+      const current = state as ProjectState;
+      // Robust Checklist Migration Logic (Target 300 items)
+      if (!current.checklist || !Array.isArray(current.checklist)) {
+        current.checklist = new Array(300).fill(false);
+      } else if (current.checklist.length < 300) {
+        const expandedChecklist = new Array(300).fill(false);
+        current.checklist.forEach((val, idx) => {
+          if (idx < 300) expandedChecklist[idx] = val;
+        });
+        current.checklist = expandedChecklist;
+      }
+      // Sync missing nested structures
+      if (!current.fleet) current.fleet = MOCK_FLEET;
+      if (!current.snapshots) current.snapshots = MOCK_SNAPSHOTS;
+      if (!current.singularity) current.singularity = defaultState.singularity;
+      if (!current.auth) current.auth = defaultState.auth;
+      if (!current.stepPriorities) current.stepPriorities = {};
+      if (!current.codexUnlocked) current.codexUnlocked = [];
+      if (!current.orchestrationLog) current.orchestrationLog = ["Singularity Kernel Initialized"];
+      return current;
     }
     private getInitialState(): ProjectState {
       return {
@@ -46,7 +53,16 @@ export class GlobalDurableObject extends DurableObject {
       };
     }
     async updateProjectState(state: ProjectState): Promise<ProjectState> {
-      const updated = { ...state, lastUpdated: new Date().toISOString() };
+      // Security check: ensure checklist isn't accidentally truncated
+      if (state.checklist && state.checklist.length < 300) {
+        const fixed = new Array(300).fill(false);
+        state.checklist.forEach((v, i) => { if(i < 300) fixed[i] = v; });
+        state.checklist = fixed;
+      }
+      const updated = { 
+        ...state, 
+        lastUpdated: new Date().toISOString() 
+      };
       await this.ctx.storage.put("project_state", updated);
       return updated;
     }
@@ -64,6 +80,7 @@ export class GlobalDurableObject extends DurableObject {
     }
     async toggleCodex(id: string): Promise<ProjectState> {
       const state = await this.getProjectState();
+      if (!state.codexUnlocked) state.codexUnlocked = [];
       const index = state.codexUnlocked.indexOf(id);
       if (index === -1) state.codexUnlocked.push(id);
       else state.codexUnlocked.splice(index, 1);
@@ -74,7 +91,9 @@ export class GlobalDurableObject extends DurableObject {
     async batchUpdateChecklist(updates: { id: number, value: boolean }[]): Promise<ProjectState> {
       const state = await this.getProjectState();
       updates.forEach(u => {
-        if (u.id >= 0 && u.id < 300) state.checklist[u.id] = u.value;
+        if (u.id >= 0 && u.id < 300) {
+          state.checklist[u.id] = u.value;
+        }
       });
       state.lastUpdated = new Date().toISOString();
       await this.ctx.storage.put("project_state", state);

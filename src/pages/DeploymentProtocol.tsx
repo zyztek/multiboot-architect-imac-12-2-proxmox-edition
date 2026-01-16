@@ -4,11 +4,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Lock, CheckCircle2, AlertTriangle, TrendingUp, Filter, Layers } from 'lucide-react';
-import { toast } from 'sonner';
+import { Lock, CheckCircle2, TrendingUp, Layers } from 'lucide-react';
 import { MASTER_STEPS } from '@shared/mock-data';
 import type { ApiResponse, ProjectState } from '@shared/types';
 export function DeploymentProtocol() {
@@ -34,9 +32,10 @@ export function DeploymentProtocol() {
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
     }
   });
-  const checklist = projectState?.checklist ?? new Array(150).fill(false);
+  const checklist = projectState?.checklist ?? new Array(300).fill(false);
+  const totalCount = MASTER_STEPS.length;
   const completedCount = checklist.filter(Boolean).length;
-  const progressPercent = (completedCount / 150) * 100;
+  const progressPercent = (completedCount / totalCount) * 100;
   const isStepLocked = (stepId: number) => {
     const step = MASTER_STEPS[stepId];
     if (!step?.requires) return false;
@@ -56,12 +55,12 @@ export function DeploymentProtocol() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/10 pb-8">
           <div className="space-y-2">
             <h1 className="text-5xl font-black text-white tracking-tighter uppercase">Protocol Master</h1>
-            <p className="text-slate-500 font-mono text-xs tracking-widest uppercase">150-Stage Deployment Pipeline</p>
+            <p className="text-slate-500 font-mono text-xs tracking-widest uppercase">{totalCount}-Stage Deployment Pipeline</p>
           </div>
           <Card className="bg-slate-900 border-white/10 p-4 w-full md:w-80 shadow-glow">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Synchronized Progress</span>
-              <span className="text-sm font-mono text-blue-400">{completedCount}/150</span>
+              <span className="text-sm font-mono text-blue-400">{completedCount}/{totalCount}</span>
             </div>
             <Progress value={progressPercent} className="h-1.5 bg-slate-800" />
           </Card>
@@ -69,7 +68,7 @@ export function DeploymentProtocol() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1 space-y-4">
              <Card className="glass-dark border-white/10 text-white">
-                <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-slate-500">Filters</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-xs uppercase tracking-widest text-slate-500">Pipeline Categories</CardTitle></CardHeader>
                 <CardContent className="space-y-2">
                    {Object.keys(stepsByCategory).map(cat => (
                      <div key={cat} className="flex items-center justify-between text-xs p-2 rounded hover:bg-white/5 cursor-pointer">
@@ -81,10 +80,10 @@ export function DeploymentProtocol() {
              </Card>
              <Card className="glass-dark border-blue-500/20 bg-blue-600/5 p-4 text-blue-400">
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase mb-2">
-                  <TrendingUp className="size-3" /> System Health
+                  <TrendingUp className="size-3" /> Swarm Logic
                 </div>
                 <p className="text-[10px] leading-relaxed text-slate-400">
-                  Dependency engine is verifying 150 constraints. Complete preceding tasks to unlock high-level Sandy Bridge optimizations.
+                  Verifying {totalCount} constraints across the Sandy Bridge hypervisor stack. Complete required nodes to unlock singularity tiers.
                 </p>
              </Card>
           </div>
@@ -107,11 +106,8 @@ export function DeploymentProtocol() {
                           ${isDone ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-slate-900/60 border-white/10'}
                           ${locked ? 'opacity-40 grayscale pointer-events-none' : 'hover:border-white/20'}
                         `}>
-                          {step.requires && (
-                            <div className="absolute left-[-1.5rem] top-1/2 w-4 h-[1px] bg-white/10" />
-                          )}
                           <Checkbox
-                            checked={isDone}
+                            checked={!!isDone}
                             onCheckedChange={(val) => batchMutation.mutate([{ id: step.id, value: !!val }])}
                             disabled={locked}
                             className="h-5 w-5 border-slate-700 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
@@ -127,9 +123,9 @@ export function DeploymentProtocol() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Tooltip>
-                              <TooltipTrigger><Layers className="size-4 text-slate-700" /></TooltipTrigger>
+                              <TooltipTrigger asChild><button><Layers className="size-4 text-slate-700 hover:text-blue-400 transition-colors" /></button></TooltipTrigger>
                               <TooltipContent className="bg-slate-800 border-white/10 text-[10px]">
-                                Requires Step: {step.requires?.join(', ') ?? 'None'}
+                                Requires Step: {step.requires?.join(', ') ?? 'Root Node'}
                               </TooltipContent>
                             </Tooltip>
                             {isDone && <CheckCircle2 className="size-4 text-emerald-500" />}
