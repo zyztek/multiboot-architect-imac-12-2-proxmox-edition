@@ -77,13 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add @xyflow/react",
-    "bun add lucide-react framer-motion @tanstack/react-query",
-    "bun add clsx tailwind-merge",
-    "bun add uuid",
-    "bun add @tanstack/react-query"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
