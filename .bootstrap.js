@@ -81,7 +81,8 @@ function runSetupCommands() {
     "bun add @xyflow/react",
     "bun add lucide-react framer-motion recharts",
     "bun add clsx tailwind-merge",
-    "bun add uuid"
+    "bun add uuid",
+    "bun add @tanstack/react-query"
 ];
     
     if (commands.length === 0) {
