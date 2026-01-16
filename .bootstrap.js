@@ -79,7 +79,7 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun add @xyflow/react",
-    "bun add lucide-react framer-motion @tanstack/react-query",
+    "bun add lucide-react framer-motion @tanstack/react-query clsx tailwind-merge",
     "bun add clsx tailwind-merge",
     "bun add uuid",
     "bun add @tanstack/react-query",
