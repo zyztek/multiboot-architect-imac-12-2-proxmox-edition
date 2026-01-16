@@ -54,7 +54,7 @@ export interface ConsoleSession {
 }
 export interface CodexItem {
   id: string;
-  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity' | 'Quantum' | 'Meta' | 'Bend';
+  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity' | 'Quantum' | 'Meta' | 'Bend' | 'Evolved';
   title: string;
   description: string;
   complexity: 'Standard' | 'Advanced' | 'Elite' | 'God' | 'Singularity';
@@ -91,6 +91,8 @@ export interface SingularityConfig {
   quantumEntropy: number;
   swarmIntegrity: number;
   lastEndgameSync: string;
+  isAlive: boolean;
+  lastEvolution: string;
 }
 export interface StorageConfig {
   win11: number;
@@ -129,6 +131,8 @@ export interface ProjectState {
   timebend: TimebendHistory[];
   oracleLog: string[];
   singularity: SingularityConfig;
+  customCodex: CodexItem[];
+  evolutionQueue: string[];
   apiConfig: {
     url: string;
     token: string;

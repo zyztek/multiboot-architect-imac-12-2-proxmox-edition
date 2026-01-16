@@ -15,6 +15,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const data = await stub.updateProjectState(body);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
+    app.post('/api/codex/custom', async (c) => {
+        const body = await c.req.json() as CodexItem;
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.addCustomCodexItem(body);
+        return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
+    });
+    app.post('/api/evolve', async (c) => {
+        const { prompt } = await c.req.json() as { prompt: string };
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.triggerEvolution(prompt);
+        return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
+    });
     app.get('/api/cosmos/wiki', async (c) => {
         return c.json({ success: true, data: GITHUB_WIKI_TEMPLATE });
     });
@@ -32,14 +44,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             efficiencyScore: 98.2
         };
         return c.json({ success: true, data: metrics } satisfies ApiResponse<OracleMetrics>);
-    });
-    app.post('/api/cosmos/export', async (c) => {
-        return c.json({ success: true, data: { status: 'synced', timestamp: new Date().toISOString() } });
-    });
-    app.post('/api/singularity/one-click', async (c) => {
-        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
-        const data = await stub.singularityOneClick();
-        return c.json({ success: true, data });
     });
     app.get('/api/codex', async (c) => {
         return c.json({ success: true, data: MASTER_CODEX } satisfies ApiResponse<CodexItem[]>);

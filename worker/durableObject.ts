@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { ProjectState, TimebendHistory, VmStatus } from '@shared/types';
+import type { ProjectState, TimebendHistory, VmStatus, CodexItem } from '@shared/types';
 import { MOCK_FLEET, MOCK_SNAPSHOTS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     private packChecklist(checklist: boolean[]): string {
@@ -62,15 +62,11 @@ export class GlobalDurableObject extends DurableObject {
         }
         if (!current.checklist || !Array.isArray(current.checklist)) {
           current.checklist = new Array(300).fill(false);
-        } else if (current.checklist.length < 300) {
-          const expanded = new Array(300).fill(false);
-          current.checklist.forEach((v, i) => { if(i < 300) expanded[i] = v; });
-          current.checklist = expanded;
         }
         current.timebend = current.timebend?.slice(-10) ?? [];
         current.oracleLog = current.oracleLog?.slice(-15) ?? ["Oracle Core Online"];
-        current.pwaState = current.pwaState ?? { isSynced: true, lastOfflineSync: new Date().toISOString() };
-        current.fleet = current.fleet ?? MOCK_FLEET;
+        current.evolutionQueue = current.evolutionQueue ?? [];
+        current.customCodex = current.customCodex ?? [];
         current.isDegraded = false;
         return current;
       } catch (e) {
@@ -91,7 +87,9 @@ export class GlobalDurableObject extends DurableObject {
         snapshots: MOCK_SNAPSHOTS.slice(0, 5),
         timebend: [],
         oracleLog: ["Oracle Core Online"],
-        singularity: { arEnabled: false, voiceActive: false, fleetMode: 'solo', exportProgress: 0, quantumEntropy: 0.12, swarmIntegrity: 1.0, lastEndgameSync: new Date().toISOString() },
+        singularity: { arEnabled: false, voiceActive: false, fleetMode: 'solo', exportProgress: 0, quantumEntropy: 0.12, swarmIntegrity: 1.0, lastEndgameSync: new Date().toISOString(), isAlive: true, lastEvolution: new Date().toISOString() },
+        customCodex: [],
+        evolutionQueue: [],
         apiConfig: { url: '', token: '', node: 'pve-imac-01' },
         hostStats: { cpu_usage: 12, mem_usage: 45, uptime: "4d 2h", zfs_health: 'ONLINE', net_in: 0.5, net_out: 0.2 },
         orchestrationLog: ["Infinity Kernel Initialized"],
@@ -122,6 +120,46 @@ export class GlobalDurableObject extends DurableObject {
       } catch (e) {
         console.error("[DO ERROR] updateProjectState failed", e);
         return state;
+      }
+    }
+    async addCustomCodexItem(item: CodexItem): Promise<ProjectState> {
+      const state = await this.getProjectState();
+      state.customCodex.push({ ...item, isUnlocked: true });
+      state.orchestrationLog.push(`New Protocol Forged: ${item.title}`);
+      return await this.updateProjectState(state);
+    }
+    async triggerEvolution(prompt: string): Promise<ProjectState> {
+      const state = await this.getProjectState();
+      state.evolutionQueue.push(`Processing: ${prompt}`);
+      state.oracleLog.push(`Oracle parsing vision: ${prompt}`);
+      // Start the "Life" loop if not already running
+      await this.ctx.storage.setAlarm(Date.now() + 5000);
+      return await this.updateProjectState(state);
+    }
+    async alarm() {
+      const state = await this.getProjectState();
+      if (state.evolutionQueue.length > 0) {
+        const task = state.evolutionQueue.shift();
+        const evolvedItem: CodexItem = {
+          id: `evolved-${Date.now()}`,
+          category: 'Evolved',
+          title: `Synthesis: ${task?.split(': ')[1]?.slice(0, 20)}...`,
+          description: `Automatically generated protocol from vision: ${task}. Integrated at ${new Date().toLocaleTimeString()}.`,
+          complexity: 'God',
+          isUnlocked: true
+        };
+        state.customCodex.push(evolvedItem);
+        state.orchestrationLog.push(`Evolution Cycle Complete: ${evolvedItem.title}`);
+        state.singularity.lastEvolution = new Date().toISOString();
+        state.singularity.quantumEntropy += 0.001;
+        await this.updateProjectState(state);
+      }
+      // Keep breathing if items remain or periodically to show "Life"
+      if (state.evolutionQueue.length > 0) {
+        await this.ctx.storage.setAlarm(Date.now() + 10000);
+      } else {
+        // Ambient heartbeat every 2 minutes
+        await this.ctx.storage.setAlarm(Date.now() + 120000);
       }
     }
     async updateVmStatus(vmid: number, status: VmStatus): Promise<ProjectState> {
