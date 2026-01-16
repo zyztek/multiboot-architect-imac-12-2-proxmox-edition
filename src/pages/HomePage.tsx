@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Activity, Zap, Thermometer, Box, Orbit, Mic, History, Calendar, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { globalVoiceEngine } from '@/lib/voice-engine';
 import type { ApiResponse, ProjectState } from '@shared/types';
 export function HomePage() {
+  const navigate = useNavigate();
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [timelineIndex, setTimelineIndex] = useState(100);
   const { data: state } = useQuery({
@@ -21,14 +23,31 @@ export function HomePage() {
     },
     refetchInterval: 5000
   });
+  useEffect(() => {
+    globalVoiceEngine.registerCommand('singularity', () => {
+      navigate('/singularity');
+      toast.success("Voice Command: Navigating to Singularity");
+    });
+    globalVoiceEngine.registerCommand('protocol', () => {
+      navigate('/protocol');
+      toast.success("Voice Command: Opening Deployment Protocol");
+    });
+  }, [navigate]);
   const vms = state?.vms ?? [];
   const snapshots = state?.snapshots ?? [];
   const checklist = state?.checklist ?? [];
+  const totalSteps = checklist.length || 300;
   const completedSteps = checklist.filter(Boolean).length;
   const toggleVoice = () => {
-    setIsVoiceActive(!isVoiceActive);
-    if (!isVoiceActive) toast.info("Voice Codex Active: Listen for commands...");
-    else toast.success("Voice Engine Standby");
+    if (!isVoiceActive) {
+      globalVoiceEngine.start();
+      setIsVoiceActive(true);
+      toast.info("Voice Codex Active: Listen for commands...");
+    } else {
+      globalVoiceEngine.stop();
+      setIsVoiceActive(false);
+      toast.success("Voice Engine Standby");
+    }
   };
   return (
     <AppLayout className="bg-slate-950 text-slate-100 overflow-hidden">
@@ -37,27 +56,40 @@ export function HomePage() {
           <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-glow-lg">
              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent)]" />
              <div className="relative w-full h-full flex items-center justify-center">
-                {vms.map((vm, i) => (
-                  <motion.div
-                    key={vm.vmid}
-                    animate={{
-                      rotate: 360,
-                      x: [150 * Math.cos(i), -150 * Math.cos(i), 150 * Math.cos(i)],
-                      y: [100 * Math.sin(i), -100 * Math.sin(i), 100 * Math.sin(i)],
-                    }}
-                    transition={{
-                      rotate: { duration: 15 + i * 2, repeat: Infinity, ease: "linear" },
-                      x: { duration: 8 + i, repeat: Infinity, ease: "easeInOut" },
-                      y: { duration: 6 + i, repeat: Infinity, ease: "easeInOut" }
-                    }}
-                    className="absolute"
-                  >
-                    <div className="p-3 glass-dark border-purple-500/20 rounded-xl flex flex-col items-center gap-1 shadow-2xl backdrop-blur-3xl">
-                      <Box className="size-5 text-purple-400" />
-                      <span className="text-[10px] font-mono text-white/80">{vm.name}</span>
-                    </div>
-                  </motion.div>
-                ))}
+                {vms.map((vm, i) => {
+                  const angle = i * 137.5; // Golden ratio based distribution
+                  const radiusX = 180 + (i * 10);
+                  const radiusY = 120 + (i * 5);
+                  return (
+                    <motion.div
+                      key={vm.vmid}
+                      animate={{
+                        rotate: 360,
+                        x: [
+                          radiusX * Math.cos(angle * (Math.PI / 180)), 
+                          -radiusX * Math.cos(angle * (Math.PI / 180)), 
+                          radiusX * Math.cos(angle * (Math.PI / 180))
+                        ],
+                        y: [
+                          radiusY * Math.sin(angle * (Math.PI / 180)), 
+                          -radiusY * Math.sin(angle * (Math.PI / 180)), 
+                          radiusY * Math.sin(angle * (Math.PI / 180))
+                        ],
+                      }}
+                      transition={{
+                        rotate: { duration: 25 + i * 5, repeat: Infinity, ease: "linear" },
+                        x: { duration: 12 + i, repeat: Infinity, ease: "easeInOut" },
+                        y: { duration: 10 + i, repeat: Infinity, ease: "easeInOut" }
+                      }}
+                      className="absolute"
+                    >
+                      <div className="p-3 glass-dark border-purple-500/20 rounded-xl flex flex-col items-center gap-1 shadow-2xl backdrop-blur-3xl">
+                        <Box className="size-5 text-purple-400" />
+                        <span className="text-[10px] font-mono text-white/80">{vm.name}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
                 <div className="center flex-col z-10 text-center space-y-2">
                   <motion.div
                     animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
@@ -67,7 +99,7 @@ export function HomePage() {
                     <Orbit className="size-16 text-purple-400 animate-spin-slow" />
                   </motion.div>
                   <h1 className="text-6xl font-display font-black tracking-tighter text-white uppercase italic">Singularity Brain</h1>
-                  <p className="text-purple-400 font-mono text-xs uppercase tracking-[0.5em]">{completedSteps}/300 Protocols Synchronized</p>
+                  <p className="text-purple-400 font-mono text-xs uppercase tracking-[0.5em]">{completedSteps}/{totalSteps} Protocols Synchronized</p>
                 </div>
              </div>
              <div className="absolute top-4 right-4">
@@ -119,7 +151,7 @@ export function HomePage() {
              <Link to="/universe" className="flex-shrink-0 w-64 p-6 glass-dark border-blue-500/30 rounded-2xl hover:bg-blue-600/10 transition-all group">
                 <Calendar className="size-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
                 <h3 className="font-bold text-sm text-white">Universe Codex</h3>
-                <p className="text-[10px] text-blue-400 uppercase mt-1">300 Technical Primitives</p>
+                <p className="text-[10px] text-blue-400 uppercase mt-1">{totalSteps} Technical Primitives</p>
              </Link>
           </div>
         </div>
