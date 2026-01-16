@@ -4,10 +4,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { History, ShieldAlert, Cpu, Sparkles, Orbit, Loader2, Activity, Zap, Server, Heart, Infinity } from 'lucide-react';
+import { Orbit, Loader2, Activity, Zap, Server, Heart, Infinity as InfinityIcon, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { globalVoiceEngine } from '@/lib/voice-engine';
 import { OracleCommander } from '@/components/OracleCommander';
@@ -15,7 +15,7 @@ import type { ApiResponse, ProjectState } from '@shared/types';
 export function HomePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: state, isError: stateError } = useQuery({
+  const { data: state } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
       const res = await fetch('/api/project-state');
@@ -53,7 +53,7 @@ export function HomePage() {
                 transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
                 className="size-72 border border-white/5 rounded-full flex items-center justify-center relative"
               >
-                <div className="absolute inset-0 border-t-2 border-blue-500/20 rounded-full animate-spin" />
+                <div className="absolute inset-0 border-t-2 border-blue-500/20 rounded-full animate-spin-slow" />
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="size-48 rounded-full bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/10 flex items-center justify-center backdrop-blur-3xl shadow-glow-lg cursor-pointer"
@@ -66,7 +66,7 @@ export function HomePage() {
               <div className="mt-12">
                 <h1 className="text-7xl font-black tracking-tighter uppercase italic bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-600">Galaxy Core</h1>
                 <div className="flex items-center justify-center gap-3 mt-2">
-                  <Infinity className="size-4 text-blue-500" />
+                  <InfinityIcon className="size-4 text-blue-500" />
                   <p className="text-blue-500 font-mono text-[9px] tracking-[0.6em] uppercase">Eternal Self-Evolving Codex</p>
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function HomePage() {
                 )}
                 {state?.orchestrationLog?.slice(-5).map((log, i) => (
                    <div key={`log-${i}`} className="flex items-center gap-3 text-[10px] font-mono text-emerald-400/60">
-                     <span className="text-emerald-500">>></span>
+                     <span className="text-emerald-500">{" >> "}</span>
                      <span>{log}</span>
                    </div>
                 ))}
@@ -145,7 +145,7 @@ export function HomePage() {
                 disabled={singularityMutation.isPending || progress >= 100}
                 className="bg-blue-600 hover:bg-blue-500 h-12 px-8 rounded-full text-xs font-black uppercase tracking-widest shadow-blue-500/20 shadow-lg"
               >
-                {singularityMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Infinity className="size-4" />}
+                {singularityMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <InfinityIcon className="size-4" />}
               </Button>
            </div>
         </div>

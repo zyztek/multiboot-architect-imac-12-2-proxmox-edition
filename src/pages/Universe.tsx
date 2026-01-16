@@ -54,6 +54,16 @@ export function Universe() {
       setNewDesc('');
     }
   });
+  const singularityMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/singularity/one-click', { method: 'POST' });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Singularity Threshold Met: 300 Primitives Aligned");
+      queryClient.invalidateQueries({ queryKey: ['project-state'] });
+    }
+  });
   const batches = ['Visionary', 'Robust', 'VM', 'AI', 'Galaxy', 'Singularity', 'Evolved'];
   const allCodexItems = useMemo(() => {
     const combined = [...(staticCodex ?? []), ...(state?.customCodex ?? [])];
@@ -85,7 +95,7 @@ export function Universe() {
   };
   return (
     <AppLayout container className="bg-slate-950 text-slate-200 min-h-screen">
-      <div className="space-y-10 animate-fade-in pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 animate-fade-in pb-24">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-white/10 pb-8">
           <div className="space-y-2">
             <h1 className="text-6xl font-black tracking-tighter text-white uppercase italic leading-none">Universe</h1>
@@ -129,14 +139,8 @@ export function Universe() {
             <Button
               variant="outline"
               className="border-white/10 text-white font-black text-[10px] uppercase h-11 px-6 tracking-widest hover:bg-white/5"
-              onClick={() => {
-                const res = fetch('/api/singularity/one-click', { method: 'POST' });
-                toast.promise(res, {
-                   loading: 'Aligning 300 Primitives...',
-                   success: 'Singularity Threshold Met',
-                   error: 'Alignment Failed'
-                });
-              }}
+              onClick={() => singularityMutation.mutate()}
+              disabled={singularityMutation.isPending}
             >
               <Sparkles className="size-4 mr-2 text-blue-400" /> Singularity
             </Button>
