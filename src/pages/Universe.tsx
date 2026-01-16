@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Search, Sparkles, Filter } from 'lucide-react';
+import { Search, Sparkles, LayoutGrid, List } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { OracleCommander } from '@/components/OracleCommander';
@@ -22,17 +22,7 @@ export function Universe() {
       const json = await res.json() as ApiResponse<CodexItem[]>;
       return json.data ?? [];
     },
-    refetchInterval: 5000
-  });
-  const singularityMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/singularity/one-click', { method: 'POST' });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['codex'] });
-      toast.success("Batch Singularity: All 300 Primitives Aligned");
-    }
+    refetchInterval: 10000
   });
   const toggleMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -47,7 +37,7 @@ export function Universe() {
       queryClient.invalidateQueries({ queryKey: ['codex'] });
     }
   });
-  const batches = ['Visionary', 'Robust', 'VM', 'AI', 'Galaxy', 'Singularity', 'Quantum', 'Meta', 'Bend'];
+  const batches = ['Visionary', 'Robust', 'VM', 'AI', 'Galaxy', 'Singularity'];
   const filtered = useMemo(() => {
     if (!codex) return [];
     const lowerSearch = search.toLowerCase();
@@ -55,82 +45,89 @@ export function Universe() {
       (item.title.toLowerCase().includes(lowerSearch) ||
        item.category.toLowerCase().includes(lowerSearch)) &&
       (!activeBatch || item.category === activeBatch)
-    ).slice(0, 300); // Guard total count
+    ).slice(0, 300);
   }, [codex, search, activeBatch]);
+  const progress = useMemo(() => {
+    if (!codex) return 0;
+    return (codex.filter(c => c.isUnlocked).length / codex.length) * 100;
+  }, [codex]);
   return (
-    <AppLayout container className="bg-slate-950 text-slate-200">
-      <div className="space-y-8 animate-fade-in">
+    <AppLayout container className="bg-slate-950 text-slate-200 min-h-screen">
+      <div className="space-y-10 animate-fade-in pb-24">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-white/10 pb-8">
           <div className="space-y-2">
             <h1 className="text-6xl font-black tracking-tighter text-white uppercase italic">Universe</h1>
-            <p className="text-blue-400 font-mono text-[10px] tracking-[0.5em] uppercase">300 Infinity Technical Primitives</p>
+            <p className="text-blue-500 font-mono text-[10px] tracking-[0.4em] uppercase">300 Robust Primitives • Sync {progress.toFixed(1)}%</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-            <div className="relative flex-1 sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+            <div className="relative flex-1 sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-600" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search Codex Modules..."
-                className="pl-10 bg-slate-900 border-white/10 text-xs h-10"
+                className="pl-10 bg-slate-900 border-white/5 text-[11px] h-11"
               />
             </div>
             <Button
-              onClick={() => singularityMutation.mutate()}
-              className="bg-blue-600 hover:bg-blue-500 h-10 px-6 uppercase font-black text-[10px] tracking-widest shadow-glow"
+              variant="outline"
+              className="border-white/10 text-white font-black text-[10px] uppercase h-11 px-6 tracking-widest hover:bg-white/5"
+              onClick={() => {
+                const res = fetch('/api/singularity/one-click', { method: 'POST' });
+                toast.promise(res, {
+                   loading: 'Aligning 300 Primitives...',
+                   success: 'Singularity Threshold Met',
+                   error: 'Alignment Failed'
+                });
+              }}
             >
-              <Sparkles className="size-4 mr-2" /> Batch Singularity
+              <Sparkles className="size-4 mr-2 text-blue-400" /> Endgame One-Click
             </Button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant={!activeBatch ? 'secondary' : 'outline'}
-              onClick={() => setActiveBatch(null)}
-              className="text-[9px] uppercase h-7 px-4"
-            >All Units</Button>
-            {batches.map(b => (
+            {['All', ...batches].map(b => (
               <Button
                 key={b}
-                variant={activeBatch === b ? 'secondary' : 'outline'}
-                onClick={() => setActiveBatch(b)}
-                className="text-[9px] uppercase h-7 px-4"
+                variant={activeBatch === b || (!activeBatch && b === 'All') ? 'secondary' : 'outline'}
+                onClick={() => setActiveBatch(b === 'All' ? null : b)}
+                className="text-[9px] uppercase h-8 px-5 border-white/5"
               >{b}</Button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-500 uppercase font-bold">Dense Grid</span>
-            <Switch checked={denseMode} onCheckedChange={setDenseMode} className="scale-75" />
+          <div className="flex items-center gap-4">
+             <div className="flex bg-slate-900 rounded-lg p-1 border border-white/5">
+                <Button variant="ghost" size="icon" onClick={() => setDenseMode(true)} className={`size-8 ${denseMode ? 'bg-white/10' : ''}`}><LayoutGrid className="size-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => setDenseMode(false)} className={`size-8 ${!denseMode ? 'bg-white/10' : ''}`}><List className="size-4" /></Button>
+             </div>
           </div>
         </div>
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 opacity-50">
-             {Array.from({ length: 12 }).map((_, i) => <div key={i} className="h-40 rounded-xl bg-slate-900 animate-pulse" />)}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+             {Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square rounded-xl bg-white/5 animate-pulse" />)}
           </div>
         ) : (
-          <div className={`grid grid-cols-1 ${denseMode ? 'md:grid-cols-4 lg:grid-cols-6' : 'md:grid-cols-3'} gap-4 transition-all duration-300`}>
+          <div className={`grid gap-4 ${denseMode ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6' : 'grid-cols-1'}`}>
             {filtered.map((item) => (
-              <div key={item.id} className="animate-in fade-in zoom-in-95 duration-200">
-                <Card className={`glass-dark border-white/10 h-full transition-all group overflow-hidden ${item.isUnlocked ? 'border-blue-500/50 bg-blue-600/10 shadow-glow' : 'hover:border-white/30'}`}>
-                  <CardHeader className="p-3 pb-1">
-                    <div className="flex justify-between items-start">
-                      <Badge variant="outline" className="text-[7px] border-white/10 uppercase tracking-tighter h-4 px-1">{item.category}</Badge>
-                      <Switch
-                        checked={!!item.isUnlocked}
-                        onCheckedChange={() => toggleMutation.mutate(item.id)}
-                        className="scale-[0.6] data-[state=checked]:bg-blue-600"
-                      />
-                    </div>
-                    <CardTitle className={`font-black text-white mt-1 leading-none ${denseMode ? 'text-[10px]' : 'text-xs'}`}>{item.title}</CardTitle>
-                  </CardHeader>
-                  {!denseMode && (
-                    <CardContent className="p-3 pt-2">
-                      <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">{item.description}</p>
-                    </CardContent>
-                  )}
-                </Card>
-              </div>
+              <Card 
+                key={item.id} 
+                className={`glass-dark border-white/10 transition-all group hover:scale-[1.02] cursor-pointer ${item.isUnlocked ? 'border-blue-500/40 bg-blue-600/5' : 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100'}`}
+                onClick={() => toggleMutation.mutate(item.id)}
+              >
+                <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="space-y-1">
+                    <Badge variant="outline" className="text-[7px] border-white/10 uppercase py-0 px-1">{item.category}</Badge>
+                    <CardTitle className="text-[11px] font-black text-white leading-tight uppercase line-clamp-1">{item.title}</CardTitle>
+                  </div>
+                  <Switch checked={!!item.isUnlocked} className="scale-75 data-[state=checked]:bg-blue-600" />
+                </CardHeader>
+                {!denseMode && (
+                  <CardContent className="px-4 pb-4">
+                    <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 italic">{item.description}</p>
+                  </CardContent>
+                )}
+              </Card>
             ))}
           </div>
         )}

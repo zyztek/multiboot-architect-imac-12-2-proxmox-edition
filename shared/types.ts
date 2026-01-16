@@ -3,7 +3,7 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export' | 'infinity-batch';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export' | 'infinity-batch' | 'wiki-gen' | 'project-gen';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
 export interface AuthUser {
   id: string;
@@ -80,7 +80,7 @@ export interface FleetNode {
 export interface Snapshot {
   id: string;
   timestamp: string;
-  checklistState: boolean[];
+  checklistState: boolean[] | string;
   label: string;
 }
 export interface SingularityConfig {
@@ -89,6 +89,8 @@ export interface SingularityConfig {
   fleetMode: 'solo' | 'swarm' | 'hive';
   exportProgress: number;
   quantumEntropy: number;
+  swarmIntegrity: number;
+  lastEndgameSync: string;
 }
 export interface StorageConfig {
   win11: number;
@@ -150,6 +152,7 @@ export interface ProjectState {
     isSynced: boolean;
     lastOfflineSync: string;
   };
+  isDegraded?: boolean;
   lastUpdated: string;
 }
 export interface ApiResponse<T = unknown> {
