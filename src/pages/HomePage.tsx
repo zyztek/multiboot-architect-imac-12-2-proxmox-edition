@@ -48,6 +48,10 @@ export function HomePage() {
   useEffect(() => {
     globalVoiceEngine.registerCommand('singularity', () => navigate('/singularity'));
     globalVoiceEngine.registerCommand('revert', () => toast.info("Timebend Mirror Initialized"));
+    return () => {
+      globalVoiceEngine.unregisterCommand('singularity');
+      globalVoiceEngine.unregisterCommand('revert');
+    };
   }, [navigate]);
   if (stateError) {
     return (

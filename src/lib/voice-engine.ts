@@ -22,26 +22,32 @@ export class VoiceCodexEngine {
         this.active = true;
       };
       this.recognition.onend = () => {
-        // Automatically restart if it was supposed to be active (prevents accidental stop)
+        // Automatically restart if it was supposed to be active
         if (this.active) {
-          try {
-            this.recognition.start();
-          } catch (e) {
-            console.error("Voice Engine failed to auto-restart", e);
-          }
+          this.safeStart();
         }
       };
       this.recognition.onerror = (event: any) => {
         console.error("[VOICE ERROR]", event.error);
-        if (event.error === 'not-allowed') {
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
           this.active = false;
         }
       };
     }
   }
+  private safeStart() {
+    if (!this.recognition) return;
+    try {
+      this.recognition.start();
+    } catch (e: any) {
+      // Ignore "Already started" errors gracefully
+      if (e.name !== 'InvalidStateError') {
+        console.error("Voice Engine failed to start", e);
+      }
+    }
+  }
   public registerCommand(keyword: string, action: () => void) {
     const lowerKeyword = keyword.toLowerCase();
-    // Only add if not already registered to prevent duplicates
     if (!this.commands.find(c => c.keyword === lowerKeyword)) {
       this.commands.push({ keyword: lowerKeyword, action });
     }
@@ -52,21 +58,17 @@ export class VoiceCodexEngine {
   }
   private processTranscript(transcript: string) {
     for (const cmd of this.commands) {
-      // Use more robust matching: check if the keyword is a discrete word or phrase in the transcript
-      if (transcript.includes(cmd.keyword)) {
+      // Robust matching: Check for keyword inclusion with word boundary safety
+      const regex = new RegExp(`\\b${cmd.keyword}\\b`, 'i');
+      if (regex.test(transcript) || transcript.includes(cmd.keyword)) {
         cmd.action();
       }
     }
   }
   public start() {
     if (this.recognition && !this.active) {
-      try {
-        this.active = true;
-        this.recognition.start();
-      } catch (e) {
-        console.error("Voice Engine failed to start", e);
-        // If it's already started, it might throw, so we catch and ignore
-      }
+      this.active = true;
+      this.safeStart();
     }
   }
   public stop() {
