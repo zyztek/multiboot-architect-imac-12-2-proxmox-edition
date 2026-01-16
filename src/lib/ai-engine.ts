@@ -32,6 +32,7 @@ export function runAiWizard(req: AiArchitectRequest): AiArchitectResponse {
     recommendedVms: vms,
     zfsConfig: `zfs set compression=lz4 rpool/data\nzfs set xattr=sa rpool/data`,
     cliCommands: commands,
-    reasoning: `Optimized for Sandy Bridge (i7-2600) limits. Pinning 4 cores for high-demand tasks while maintaining ${ramGb > 16 ? 'plenty' : 'modest'} host headroom.`
+    reasoning: `Optimized for Sandy Bridge limits. Pinning 4 cores for high-demand tasks.`,
+    prediction: `CPU thermal saturation expected at 85% load. I/O wait will likely bottleneck if more than 3 high-performance VMs are concurrent.`
   };
 }

@@ -7,11 +7,20 @@ export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
 export interface CodexItem {
   id: string;
-  category: 'Robust' | 'USB' | 'VM' | 'Visionary' | 'AI' | 'Galaxy';
+  category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy';
   title: string;
   description: string;
   complexity: 'Standard' | 'Advanced' | 'Elite' | 'God';
   cmd?: string;
+  isUnlocked?: boolean;
+}
+export interface DeploymentStep {
+  id: number;
+  title: string;
+  category: string;
+  desc: string;
+  requires?: number[]; // Array of step IDs that must be completed first
+  priority?: number; // User priority score
 }
 export interface AuthUser {
   id: string;
@@ -87,6 +96,7 @@ export interface AiArchitectResponse {
 }
 export interface ProjectState {
   checklist: boolean[];
+  stepPriorities: Record<number, number>;
   storage: StorageConfig;
   vms: VmConfig[];
   nodes: ClusterNode[];
