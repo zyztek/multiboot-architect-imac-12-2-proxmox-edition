@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { MouseTrail } from "@/components/MouseTrail";
+import { MatrixRain } from "@/components/MatrixRain";
 type AppLayoutProps = {
   children: React.ReactNode;
   container?: boolean;
@@ -16,6 +17,7 @@ export function AppLayout({ children, container = false, className, contentClass
       <SidebarProvider defaultOpen={false}>
         <AppSidebar />
         <ParticleBackground />
+        <MatrixRain />
         <MouseTrail />
         <SidebarInset className={className}>
           <div className="absolute left-4 top-4 z-20">

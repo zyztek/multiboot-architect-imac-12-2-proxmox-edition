@@ -23,6 +23,7 @@ export function AppSidebar(): JSX.Element {
     { path: "/report", icon: BookOpen, label: "Intelligence" },
     { path: "/tools", icon: PenTool, label: "Script Forge" },
     { path: "/protocol", icon: CheckSquare, label: "Deployment" },
+    { path: "/guide", icon: Orbit, label: "Empire Guide", elite: true },
     { path: "/usb-forge", icon: Monitor, label: "USB Forge", elite: true },
     { path: "/usb-flash", icon: Monitor, label: "WebUSB Flash" },
     { path: "/universe", icon: Globe, label: "Universe" },

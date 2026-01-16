@@ -10,6 +10,7 @@ import { Orchestrator } from '@/pages/Orchestrator';
 import { Visionary } from '@/pages/Visionary';
 import { Universe } from '@/pages/Universe';
 import { Singularity } from '@/pages/Singularity';
+import { InteractiveGuide } from '@/pages/InteractiveGuide';
 import { UsbForge } from '@/pages/UsbForge';
 import { UsbFlash } from '@/pages/UsbFlash';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
   { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
   { path: "/singularity", element: <Singularity />, errorElement: <RouteErrorBoundary /> },
   { path: "/usb-forge", element: <UsbForge />, errorElement: <RouteErrorBoundary /> },
+  { path: "/guide", element: <InteractiveGuide />, errorElement: <RouteErrorBoundary /> },
   { path: "/usb-flash", element: <UsbFlash />, errorElement: <RouteErrorBoundary /> },
 ]);
 export function InfinityKernel() {
