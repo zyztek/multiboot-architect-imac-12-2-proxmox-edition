@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { Env } from './core-utils';
 import { MASTER_CODEX } from '@shared/mock-data';
-import type { ApiResponse, ProjectState, CodexItem, OracleMetrics } from '@shared/types';
+import type { ApiResponse, ProjectState, CodexItem, OracleMetrics, AuthUser } from '@shared/types';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/project-state', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
@@ -39,13 +39,26 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const data = await stub.recursiveRevert(historyId);
         return c.json({ success: true, data });
     });
-    app.get('/api/health/deep', async (c) => {
-        const checks = Array.from({ length: 100 }).map((_, i) => ({
-            id: i,
-            component: `Kernel_Module_${i}`,
-            status: Math.random() > 0.01 ? 'PASS' : 'WARN'
-        }));
-        return c.json({ success: true, data: checks });
+    app.get('/api/codex', async (c) => {
+        return c.json({ success: true, data: MASTER_CODEX } satisfies ApiResponse<CodexItem[]>);
+    });
+    app.post('/api/export-iso', async (c) => {
+        return c.json({ success: true, data: { status: 'forged', path: '/exports/singularity-v1.iso' } });
+    });
+    app.post('/api/usb-sim', async (c) => {
+        const body = await c.req.json();
+        return c.json({ success: true, data: { status: 'simulated', config: body } });
+    });
+    app.post('/api/proxmox/vm/action', async (c) => {
+        const { vmid, action } = await c.req.json() as { vmid: number, action: 'start' | 'stop' };
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.updateVmStatus(vmid, action === 'start' ? 'running' : 'stopped');
+        return c.json({ success: true, data });
+    });
+    app.post('/api/auth/login', async (c) => {
+        const { username } = await c.req.json() as { username: string };
+        const mockUser: AuthUser = { id: crypto.randomUUID(), username, role: 'administrator' };
+        return c.json({ success: true, data: mockUser } satisfies ApiResponse<AuthUser>);
     });
     app.post('/api/codex/toggle', async (c) => {
         const { id } = await c.req.json() as { id: string };

@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { Activity, Zap, Orbit, Mic, History, ShieldAlert, Cpu, Sparkles, Wand2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -62,7 +63,7 @@ export function HomePage() {
                   <motion.div
                     key={i}
                     initial={{ opacity: 0 }}
-                    animate={{ 
+                    animate={{
                       opacity: [0.2, 0.5, 0.2],
                       scale: [1, 1.2, 1],
                       x: Math.random() * 1000 - 500,
@@ -101,7 +102,7 @@ export function HomePage() {
                    </div>
                    <Progress value={progress} className="h-1 bg-white/5" />
                 </div>
-                <Button 
+                <Button
                   onClick={() => singularityMutation.mutate()}
                   disabled={singularityMutation.isPending || progress >= 100}
                   className="bg-blue-600 hover:bg-blue-500 h-14 px-8 rounded-full text-xs font-black uppercase tracking-widest shadow-blue-500/20 shadow-lg"

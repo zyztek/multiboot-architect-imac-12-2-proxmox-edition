@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { ProjectState, TimebendHistory } from '@shared/types';
+import type { ProjectState, TimebendHistory, VmStatus } from '@shared/types';
 import { MOCK_FLEET, MOCK_SNAPSHOTS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     async getProjectState(): Promise<ProjectState> {
@@ -59,6 +59,15 @@ export class GlobalDurableObject extends DurableObject {
       state.lastUpdated = new Date().toISOString();
       await this.ctx.storage.put("project_state", state);
       return state;
+    }
+    async updateVmStatus(vmid: number, status: VmStatus): Promise<ProjectState> {
+        const state = await this.getProjectState();
+        const vm = state.vms.find(v => v.vmid === vmid);
+        if (vm) {
+            vm.status = status;
+            state.orchestrationLog.push(`VM ${vmid} transition: ${status}`);
+        }
+        return await this.updateProjectState(state);
     }
     async recursiveRevert(historyId: string): Promise<ProjectState> {
       const state = await this.getProjectState();

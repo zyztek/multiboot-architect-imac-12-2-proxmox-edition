@@ -45,13 +45,15 @@ const router = createBrowserRouter([
   { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
   { path: "/singularity", element: <Singularity />, errorElement: <RouteErrorBoundary /> },
 ]);
-function InfinityKernel() {
+export function InfinityKernel() {
   useEffect(() => {
     // Global Singularity Sync
     const syncState = async () => {
       try {
         const res = await fetch('/api/project-state');
-        if (res.ok) console.warn("[INFINITY KERNEL]: Sync Aligned");
+        if (res.ok) {
+           // Success log is fine for debugging
+        }
       } catch (e) {
         console.error("[INFINITY KERNEL]: Sync Failure", e);
       }
