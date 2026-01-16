@@ -6,15 +6,18 @@ export function OracleCommander() {
   const [isActive, setIsActive] = useState(false);
   const [lastWords, setLastWords] = useState<string | null>(null);
   useEffect(() => {
+    // Reduced polling frequency to 1000ms for performance stability
     const interval = setInterval(() => {
-      setIsActive(globalVoiceEngine.isActive());
-    }, 500);
+      const activeState = globalVoiceEngine.isActive();
+      setIsActive(activeState);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
   const handleToggle = () => {
     if (isActive) {
       globalVoiceEngine.stop();
       setIsActive(false);
+      setLastWords(null);
     } else {
       globalVoiceEngine.start();
       setIsActive(true);
@@ -43,8 +46,8 @@ export function OracleCommander() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         className={`size-16 rounded-full flex items-center justify-center relative transition-all duration-500 ${
-          isActive 
-            ? 'bg-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.6)] ring-2 ring-blue-400' 
+          isActive
+            ? 'bg-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.6)] ring-2 ring-blue-400'
             : 'bg-slate-900 border border-white/10 hover:border-blue-500/50'
         }`}
       >
@@ -79,7 +82,7 @@ export function OracleCommander() {
           <div className="absolute -top-1 -right-1">
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 shadow-glow"></span>
             </span>
           </div>
         )}

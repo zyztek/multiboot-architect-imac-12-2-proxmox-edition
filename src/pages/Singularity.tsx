@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,6 +16,11 @@ export function Singularity() {
   const queryClient = useQueryClient();
   const [isForging, setIsForging] = useState(false);
   const [forgeStep, setForgeStep] = useState(0);
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
   const { data: state } = useQuery({
     queryKey: ['project-state'],
     queryFn: async () => {
@@ -40,18 +45,24 @@ export function Singularity() {
   });
   const forgeMutation = useMutation({
     mutationFn: async () => {
-      setIsForging(true);
+      if (isMounted.current) setIsForging(true);
       for(let i=1; i<=3; i++) {
+        if (!isMounted.current) break;
         setForgeStep(i);
         await new Promise(r => setTimeout(r, 1500));
       }
+      if (!isMounted.current) return null;
       return fetch('/api/export-iso', { method: 'POST' }).then(r => r.json());
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data || !isMounted.current) return;
       toast.success("AppOS Wormhole: ISO Forged");
       setIsForging(false);
       setForgeStep(0);
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
+    },
+    onSettled: () => {
+      if (isMounted.current) setIsForging(false);
     }
   });
   const timebend = state?.timebend ?? [];
@@ -70,7 +81,7 @@ export function Singularity() {
             </div>
           </div>
           <Tabs defaultValue="cosmos" className="w-full">
-            <TabsList className="bg-slate-900/50 border border-white/10 p-1 w-full sm:w-auto">
+            <TabsList className="bg-slate-900/50 border border-white/10 p-1 w-full sm:w-auto overflow-x-auto">
               <TabsTrigger value="cosmos" className="text-[10px] uppercase font-black px-8">GitHub Cosmos</TabsTrigger>
               <TabsTrigger value="timebend" className="text-[10px] uppercase font-black px-8">Timebend Mirror</TabsTrigger>
               <TabsTrigger value="wormhole" className="text-[10px] uppercase font-black px-8">AppOS Wormhole</TabsTrigger>
@@ -148,7 +159,7 @@ export function Singularity() {
                       <span>{isForging ? `Layer ${forgeStep} Injection` : "Forge Ready"}</span>
                       <span>{isForging ? `${Math.round((forgeStep/3)*100)}%` : "0%"}</span>
                     </div>
-                    <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800" />
+                    <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800 transition-all duration-500" />
                     <Button
                       onClick={() => forgeMutation.mutate()}
                       disabled={isForging}
