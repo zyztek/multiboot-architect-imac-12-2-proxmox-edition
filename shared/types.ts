@@ -5,6 +5,39 @@ export interface DemoItem {
 }
 export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
+export interface AuthUser {
+  id: string;
+  username: string;
+  role: string;
+}
+export interface IsoMetadata {
+  id: string;
+  filename: string;
+  size: number;
+  detectedOs: string;
+  architecture: string;
+  format: 'iso' | 'qcow2' | 'vmdk' | 'raw' | 'ova';
+  status: 'available' | 'downloading' | 'corrupt';
+}
+export interface AiArchitectRequest {
+  goal: 'Workstation' | 'Server' | 'Lab';
+  ramGb: number;
+  storageGb: number;
+}
+export interface AiArchitectResponse {
+  recommendedVms: VmConfig[];
+  zfsConfig: string;
+  cliCommands: string[];
+  reasoning: string;
+  prediction: string;
+}
+export interface ConsoleSession {
+  id: string;
+  vmid: number;
+  protocol: 'vnc' | 'spice' | 'rdp';
+  token: string;
+  resolution: string;
+}
 export interface CodexItem {
   id: string;
   category: 'Visionary' | 'Robust' | 'VM' | 'AI' | 'Galaxy' | 'Singularity';
@@ -94,7 +127,7 @@ export interface ProjectState {
   codexUnlocked: string[];
   auth: {
     isAuthenticated: boolean;
-    user: { id: string; username: string; role: string } | null;
+    user: AuthUser | null;
   };
   lastUpdated: string;
 }

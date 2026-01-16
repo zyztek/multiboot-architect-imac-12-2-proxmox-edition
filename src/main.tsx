@@ -16,6 +16,7 @@ import { ProxmoxDashboard } from '@/pages/ProxmoxDashboard';
 import { Orchestrator } from '@/pages/Orchestrator';
 import { Visionary } from '@/pages/Visionary';
 import { Universe } from '@/pages/Universe';
+import { Singularity } from '@/pages/Singularity';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
   { path: "/orchestrator", element: <Orchestrator />, errorElement: <RouteErrorBoundary /> },
   { path: "/visionary", element: <Visionary />, errorElement: <RouteErrorBoundary /> },
   { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
+  { path: "/singularity", element: <Singularity />, errorElement: <RouteErrorBoundary /> },
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

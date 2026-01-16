@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { ProjectState, ClusterNode, FleetNode, Snapshot } from '@shared/types';
+import type { ProjectState, ClusterNode, FleetNode, Snapshot, AuthUser } from '@shared/types';
 import { MOCK_FLEET, MOCK_SNAPSHOTS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     async getProjectState(): Promise<ProjectState> {
@@ -13,9 +13,11 @@ export class GlobalDurableObject extends DurableObject {
           (current.checklist || []).forEach((v, i) => { if(i < 300) newChecklist[i] = v; });
           current.checklist = newChecklist;
         }
+        // Ensure new structures exist
         if (!current.fleet) current.fleet = MOCK_FLEET;
         if (!current.snapshots) current.snapshots = MOCK_SNAPSHOTS;
         if (!current.singularity) current.singularity = defaultState.singularity;
+        if (!current.auth) current.auth = defaultState.auth;
         return current;
       }
       await this.ctx.storage.put("project_state", defaultState);
