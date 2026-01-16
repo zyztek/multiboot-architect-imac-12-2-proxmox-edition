@@ -5,12 +5,12 @@ export class GlobalDurableObject extends DurableObject {
       const state = await this.ctx.storage.get("project_state");
       if (state) {
         const current = state as ProjectState;
+        // Fix missing properties on legacy state
         if (!current.nodes) current.nodes = this.getDefaultNodes();
         if (!current.sensors) current.sensors = [];
         if (!current.orchestrationLog) current.orchestrationLog = ["Cluster initialized"];
         if (!current.isoLibrary) current.isoLibrary = [];
         if (!current.visionarySessions) current.visionarySessions = [];
-        if (!current.codexUnlocked) current.codexUnlocked = [];
         if (!current.auth) current.auth = { isAuthenticated: false, user: null };
         if (!current.kyber) current.kyber = { enabled: false, keyStrength: 'Level1', lastRotation: new Date().toISOString() };
         return current;

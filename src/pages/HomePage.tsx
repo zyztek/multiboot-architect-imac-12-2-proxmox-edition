@@ -13,6 +13,7 @@ export function HomePage() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
+      if (!json.success || !json.data) throw new Error("State sync failed");
       return json.data;
     },
     refetchInterval: 5000
@@ -22,6 +23,7 @@ export function HomePage() {
     queryFn: async () => {
       const res = await fetch('/api/sensors');
       const json = await res.json() as ApiResponse<SensorData>;
+      if (!json.success || !json.data) throw new Error("Sensor sync failed");
       return json.data;
     },
     refetchInterval: 2000
@@ -30,10 +32,8 @@ export function HomePage() {
   return (
     <AppLayout container className="bg-slate-950 text-slate-100 overflow-hidden">
       <div className="space-y-12 relative">
-        {/* Galaxy Brain Hero Section */}
         <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-glow-lg">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent)]" />
-           {/* Simulated 3D VM Orbits */}
            <div className="relative w-full h-full flex items-center justify-center">
               {vms.map((vm, i) => (
                 <motion.div
@@ -69,7 +69,6 @@ export function HomePage() {
               </div>
            </div>
         </div>
-        {/* Real-time Sensors & ML Prediction Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="glass-dark border-white/10 text-white">
             <CardHeader className="pb-2">
@@ -126,7 +125,6 @@ export function HomePage() {
             </CardContent>
           </Card>
         </div>
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/orchestrator" className="p-6 glass-dark border-white/10 rounded-2xl hover:border-blue-500/50 transition-all group">
             <Box className="size-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />

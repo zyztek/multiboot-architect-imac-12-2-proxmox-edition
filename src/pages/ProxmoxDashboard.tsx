@@ -16,6 +16,7 @@ export function ProxmoxDashboard() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
+      if (!json.success || !json.data) throw new Error("State sync failed");
       return json.data;
     }
   });
@@ -45,14 +46,14 @@ export function ProxmoxDashboard() {
             <p className="text-slate-500 text-xs font-mono">Tsunami Orchestration Layer v2.0</p>
           </div>
           <div className="flex gap-2">
-            {nodes.map(node => (
-              <Button 
-                key={node.id} 
+            {nodes.map((node: ClusterNode) => (
+              <Button
+                key={node.id}
                 onClick={() => setSelectedNode(node.name === selectedNode ? null : node.name)}
                 variant={selectedNode === node.name ? 'default' : 'outline'}
-                className="h-10 glass border-white/10 text-xs"
+                className={`h-10 glass border-white/10 text-xs ${node.status === 'offline' ? 'opacity-50' : ''}`}
               >
-                <Server className="size-3 mr-2" /> {node.name}
+                <Server className={`size-3 mr-2 ${node.status === 'online' ? 'text-emerald-400' : 'text-slate-500'}`} /> {node.name}
               </Button>
             ))}
           </div>
@@ -114,6 +115,11 @@ export function ProxmoxDashboard() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {vms.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center text-slate-500 font-mono text-xs uppercase">No virtual machines found</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
              </Table>
            </Card>
