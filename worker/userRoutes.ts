@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { Env } from './core-utils';
 import { MASTER_CODEX } from '@shared/mock-data';
-import { GITHUB_WIKI_TEMPLATE, GITHUB_PROJECTS_CONFIG } from '@/lib/cosmos-templates';
+import { GITHUB_WIKI_TEMPLATE, GITHUB_PROJECTS_CONFIG } from '@shared/cosmos-templates';
 import type { ApiResponse, ProjectState, CodexItem, OracleMetrics, AuthUser } from '@shared/types';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/project-state', async (c) => {
