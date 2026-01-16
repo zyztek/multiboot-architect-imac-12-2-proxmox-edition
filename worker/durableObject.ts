@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { ProjectState, TimebendHistory, VmStatus, CodexItem } from '@shared/types';
+import type { ProjectState, TimebendHistory, VmStatus, CodexItem, ForgeJob } from '@shared/types';
 import { MOCK_FLEET, MOCK_SNAPSHOTS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     private packChecklist(checklist: boolean[]): string {
@@ -52,6 +52,9 @@ export class GlobalDurableObject extends DurableObject {
         if (typeof current.checklist === 'string') {
           current.checklist = this.unpackChecklist(current.checklist);
         }
+        // Ensure new fields exist even in old stored state
+        current.activeForgeJobs = current.activeForgeJobs ?? [];
+        current.usbDeviceState = current.usbDeviceState ?? { lastConnected: null };
         current.isDegraded = false;
         return current;
       } catch (e) {
@@ -73,6 +76,8 @@ export class GlobalDurableObject extends DurableObject {
         singularity: { arEnabled: false, voiceActive: false, fleetMode: 'solo', exportProgress: 0, quantumEntropy: 0.0001, swarmIntegrity: 1.0, lastEndgameSync: new Date().toISOString(), isAlive: true, lastEvolution: new Date().toISOString() },
         customCodex: [],
         evolutionQueue: [],
+        activeForgeJobs: [],
+        usbDeviceState: { lastConnected: null },
         apiConfig: { url: '', token: '', node: 'pve-imac-01' },
         hostStats: { cpu_usage: 12, mem_usage: 45, uptime: "4d 2h", zfs_health: 'ONLINE', net_in: 0.5, net_out: 0.2 },
         orchestrationLog: ["Infinity Kernel Initialized"],
@@ -135,12 +140,10 @@ export class GlobalDurableObject extends DurableObject {
         state.singularity.lastEvolution = new Date().toISOString();
         state.singularity.quantumEntropy += 0.000001;
       } else {
-        // Periodic maintenance log
         const maintenanceMsg = logs[Math.floor(Math.random() * logs.length)];
         state.orchestrationLog.push(`[MAINTENANCE] ${maintenanceMsg}`);
       }
       await this.updateProjectState(state);
-      // Keep breathing: Frequent if work to do, ambient otherwise
       const nextDelay = state.evolutionQueue.length > 0 ? 5000 : 60000;
       await this.ctx.storage.setAlarm(Date.now() + nextDelay);
     }

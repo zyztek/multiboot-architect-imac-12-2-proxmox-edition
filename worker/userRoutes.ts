@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { Env } from './core-utils';
 import { MASTER_CODEX } from '@shared/mock-data';
-import { GITHUB_WIKI_TEMPLATE, GITHUB_PROJECTS_CONFIG, DEPENDABOT_CONFIG, GITHUB_SECRETS_GUIDE } from '@shared/cosmos-templates';
-import type { ApiResponse, ProjectState, CodexItem, OracleMetrics, AuthUser } from '@shared/types';
+import * as templates from '@shared/cosmos-templates';
+import type { ApiResponse, ProjectState, CodexItem, OracleMetrics, AuthUser, ForgeJob } from '@shared/types';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/project-state', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
@@ -36,9 +36,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const { os, components } = await c.req.json() as { os: string[], components: string[] };
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         const state = await stub.getProjectState();
-        const newJob = {
+        const newJob: ForgeJob = {
             id: crypto.randomUUID(),
-            status: 'processing',
+            status: 'processing' as const,
             progress: 0,
             targetOs: os,
             components,
@@ -46,23 +46,22 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         };
         state.activeForgeJobs = [newJob, ...(state.activeForgeJobs || [])].slice(0, 5);
         await stub.updateProjectState(state);
-        return c.json({ success: true, data: newJob });
+        return c.json({ success: true, data: newJob } satisfies ApiResponse<ForgeJob>);
     });
-    app.get('/api/cosmos/usb-workflow', async (c) => {
-        const { GITHUB_USB_BUILD_WORKFLOW } = await import('@shared/cosmos-templates');
-        return c.json({ success: true, data: GITHUB_USB_BUILD_WORKFLOW });
+    app.get('/api/cosmos/usb-workflow', (c) => {
+        return c.json({ success: true, data: templates.GITHUB_USB_BUILD_WORKFLOW });
     });
-    app.get('/api/cosmos/wiki', async (c) => {
-        return c.json({ success: true, data: GITHUB_WIKI_TEMPLATE });
+    app.get('/api/cosmos/wiki', (c) => {
+        return c.json({ success: true, data: templates.GITHUB_WIKI_TEMPLATE });
     });
-    app.get('/api/cosmos/dependabot', async (c) => {
-        return c.json({ success: true, data: DEPENDABOT_CONFIG });
+    app.get('/api/cosmos/dependabot', (c) => {
+        return c.json({ success: true, data: templates.DEPENDABOT_CONFIG });
     });
-    app.get('/api/cosmos/secrets', async (c) => {
-        return c.json({ success: true, data: GITHUB_SECRETS_GUIDE });
+    app.get('/api/cosmos/secrets', (c) => {
+        return c.json({ success: true, data: templates.GITHUB_SECRETS_GUIDE });
     });
-    app.get('/api/cosmos/projects', async (c) => {
-        return c.json({ success: true, data: GITHUB_PROJECTS_CONFIG });
+    app.get('/api/cosmos/projects', (c) => {
+        return c.json({ success: true, data: templates.GITHUB_PROJECTS_CONFIG });
     });
     app.post('/api/oracle/predict', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
