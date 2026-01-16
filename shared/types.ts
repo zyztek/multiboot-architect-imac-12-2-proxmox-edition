@@ -121,7 +121,7 @@ export interface ClusterNode {
   ip: string;
 }
 export interface ProjectState {
-  checklist: boolean[];
+  checklist: boolean[]; // Note: Persisted as Base64 string in DO storage, but used as boolean array in runtime
   stepPriorities: Record<number, number>;
   storage: StorageConfig;
   vms: VmConfig[];

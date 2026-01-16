@@ -84,7 +84,7 @@ export function Universe() {
   const handleCreate = () => {
     if (!newTitle) return;
     const item: CodexItem = {
-      id: `custom-${Date.now()}`,
+      id: `manual-${Date.now()}`,
       category: 'Robust',
       title: newTitle,
       description: newDesc,
@@ -99,7 +99,7 @@ export function Universe() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-white/10 pb-8">
           <div className="space-y-2">
             <h1 className="text-6xl font-black tracking-tighter text-white uppercase italic leading-none">Universe</h1>
-            <p className="text-blue-500 font-mono text-[10px] tracking-[0.4em] uppercase">Infinite Robust Codex • Sync {progress.toFixed(1)}%</p>
+            <p className="text-blue-500 font-mono text-[10px] tracking-[0.4em] uppercase">Infinite Robust Codex ��� Sync {progress.toFixed(1)}%</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative flex-1 sm:w-80">
@@ -192,7 +192,7 @@ export function Universe() {
                     <Badge variant="outline" className={`text-[7px] border-white/10 uppercase py-0 px-1 ${item.id.startsWith('evolved') ? 'border-purple-500 text-purple-400' : ''}`}>{item.category}</Badge>
                     <CardTitle className="text-[11px] font-black text-white leading-tight uppercase line-clamp-1">{item.title}</CardTitle>
                   </div>
-                  <Switch checked={!!item.isUnlocked} readOnly className="scale-75 data-[state=checked]:bg-blue-600" />
+                  <Switch checked={!!item.isUnlocked} disabled className="scale-75 data-[state=checked]:bg-blue-600" />
                 </CardHeader>
                 {!denseMode && (
                   <CardContent className="px-4 pb-4">
