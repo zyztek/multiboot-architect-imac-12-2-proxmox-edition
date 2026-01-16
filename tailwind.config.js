@@ -60,13 +60,6 @@ export default {
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
   			input: 'hsl(var(--input))',
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
@@ -82,6 +75,7 @@ export default {
   			soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
   			glow: '0 0 20px -5px rgba(99, 102, 241, 0.4)',
   			'glow-lg': '0 0 40px -10px rgba(99, 102, 241, 0.3)',
+  			'glow-xl': '0 0 60px -15px rgba(99, 102, 241, 0.5)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
   			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
         neonGlow: '0 0 20px #ff00ff',
@@ -107,20 +101,16 @@ export default {
         neonOrbit: {
           '0%': { transform: 'rotate(0deg) translateX(10px) rotate(0deg)' },
           '100%': { transform: 'rotate(360deg) translateX(10px) rotate(-360deg)' }
-        },
-        hoverLift: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' }
         }
   		},
   		animation: {
   			'fade-in': 'fade-in 0.6s ease-out',
   			'slide-up': 'slide-up 0.4s ease-out',
-  			'spin-slow': 'spin 8s linear infinite',
+  			'spin-slow': 'spin 12s linear infinite',
+  			'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   			shimmer: 'shimmer 2s infinite',
   			float: 'float 3s ease-in-out infinite',
-        'orbit-pulse': 'neonOrbit 4s linear infinite',
-        'hover-lift': 'hoverLift 2s ease-in-out infinite'
+        'orbit-pulse': 'neonOrbit 4s linear infinite'
   		}
   	}
   },

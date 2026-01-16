@@ -26,7 +26,7 @@ const router = createBrowserRouter([
 export function InfinityKernel() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'hydrating' | 'degraded' | 'stable'>('hydrating');
   const [retryCount, setRetryCount] = useState(0);
-  const syncState = useCallback(async (active: boolean) => {
+  const performSync = useCallback(async (active: boolean) => {
     try {
       const res = await fetch('/api/project-state');
       if (res.ok && active) {
@@ -36,17 +36,20 @@ export function InfinityKernel() {
         } else {
           throw new Error("Handshake declined");
         }
-      } else {
+      } else if (active) {
         throw new Error("Network unreachable");
       }
     } catch (e) {
       if (!active) return;
       if (retryCount < 5) {
         const nextRetry = retryCount + 1;
-        setRetryCount(nextRetry);
         const delay = Math.pow(2, retryCount) * 500;
         console.warn(`[INFINITY KERNEL]: Sync retry ${nextRetry}/5 in ${delay}ms`);
-        setTimeout(() => syncState(active), delay);
+        setTimeout(() => {
+          if (active) {
+            setRetryCount(nextRetry);
+          }
+        }, delay);
       } else {
         console.error("[INFINITY KERNEL]: Sync failure. Engaging Degraded Mode.");
         setSyncStatus('degraded');
@@ -55,9 +58,11 @@ export function InfinityKernel() {
   }, [retryCount]);
   useEffect(() => {
     let active = true;
-    syncState(active);
+    if (syncStatus === 'hydrating' || syncStatus === 'degraded') {
+      performSync(active);
+    }
     return () => { active = false; };
-  }, [syncState]);
+  }, [retryCount, performSync, syncStatus]);
   return (
     <>
       <AnimatePresence>
@@ -66,16 +71,24 @@ export function InfinityKernel() {
             key="kernel-splash"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
             className="fixed inset-0 z-[999] bg-slate-950 flex flex-col items-center justify-center gap-6"
           >
-            <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-glow animate-pulse">
-              <Terminal className="text-white size-10" />
+            <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-glow animate-pulse">
+              <Terminal className="text-white size-12" />
             </div>
-            <div className="space-y-2 text-center">
-              <h2 className="text-white font-black uppercase tracking-[0.4em] italic text-xl">Infinity Kernel</h2>
-              <p className="text-blue-500 font-mono text-[10px] uppercase tracking-widest animate-pulse">
-                Hydrating Robust State... {retryCount > 0 ? `(Attempt ${retryCount})` : ""}
-              </p>
+            <div className="space-y-3 text-center">
+              <h2 className="text-white font-black uppercase tracking-[0.5em] italic text-2xl">Infinity Kernel</h2>
+              <div className="flex flex-col gap-1">
+                <p className="text-blue-500 font-mono text-[10px] uppercase tracking-widest animate-pulse">
+                  Hydrating Robust State...
+                </p>
+                {retryCount > 0 && (
+                  <p className="text-slate-600 font-mono text-[8px] uppercase tracking-widest">
+                    Link Attempt {retryCount}/5
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,19 @@ import confetti from 'canvas-confetti';
 import { CosmosExportPanel } from '@/components/CosmosExportPanel';
 import { OracleCommander } from '@/components/OracleCommander';
 import type { ApiResponse, ProjectState } from '@shared/types';
+const SingularityNode = React.memo(({ isActive, index }: { isActive: boolean; index: number }) => (
+  <motion.div
+    initial={false}
+    animate={{
+      opacity: isActive ? 1 : 0.2,
+      backgroundColor: isActive ? (index % 2 === 0 ? '#00ffff' : '#ff00ff') : '#1e293b',
+      boxShadow: isActive ? `0 0 10px ${index % 2 === 0 ? '#00ffff' : '#ff00ff'}` : 'none'
+    }}
+    transition={{ duration: 0.3 }}
+    className="aspect-square rounded-[1px] min-h-[4px]"
+  />
+));
+SingularityNode.displayName = 'SingularityNode';
 export function Singularity() {
   const queryClient = useQueryClient();
   const [isForging, setIsForging] = useState(false);
@@ -28,7 +41,8 @@ export function Singularity() {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
       return json.data || null;
-    }
+    },
+    refetchInterval: 5000,
   });
   const timebendMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -44,40 +58,42 @@ export function Singularity() {
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
     }
   });
+  const checklist = useMemo(() => state?.checklist ?? [], [state?.checklist]);
+  const completedCount = useMemo(() => checklist.filter(Boolean).length, [checklist]);
   const forgeMutation = useMutation({
     mutationFn: async () => {
       if (isMounted.current) setIsForging(true);
-      for(let i=1; i<=3; i++) {
+      for(let i = 1; i <= 3; i++) {
         if (!isMounted.current) break;
         setForgeStep(i);
         await new Promise(r => setTimeout(r, 1500));
       }
       if (!isMounted.current) return null;
-      return fetch('/api/export-iso', { method: 'POST' }).then(r => r.json());
+      return fetch('/api/singularity/one-click', { method: 'POST' }).then(r => r.json());
     },
     onSuccess: (data) => {
       if (!data || !isMounted.current) return;
-      toast.success("Wormhole Forge Complete: Multi-Format ISO/RAW Ready");
-      setIsForging(false);
-      if (completedCount >= 300) {
+      toast.success("Singularity Threshold Realized: 300 Primitives Aligned");
+      if (typeof window !== 'undefined') {
         confetti({
           particleCount: 200,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#ffd700', '#00ffff', '#ff00ff']
+          colors: ['#ffd700', '#00ffff', '#ff00ff'],
+          zIndex: 9999
         });
       }
-      setForgeStep(0);
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
     },
     onSettled: () => {
-      if (isMounted.current) setIsForging(false);
+      if (isMounted.current) {
+        setIsForging(false);
+        setForgeStep(0);
+      }
     }
   });
   const timebend = state?.timebend ?? [];
   const entropy = state?.singularity?.quantumEntropy ?? 0;
-  const checklist = state?.checklist ?? [];
-  const completedCount = checklist.filter(Boolean).length;
   return (
     <AppLayout className="bg-slate-950 text-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,16 +117,7 @@ export function Singularity() {
                <CardContent className="p-6">
                   <div className="grid grid-cols-15 md:grid-cols-30 gap-2">
                      {Array.from({ length: 300 }).map((_, i) => (
-                       <motion.div
-                         key={i}
-                         initial={{ opacity: 0.1 }}
-                         animate={{
-                           opacity: checklist[i] ? 1 : 0.2,
-                           backgroundColor: checklist[i] ? (i % 2 === 0 ? '#00ffff' : '#ff00ff') : '#1e293b',
-                           boxShadow: checklist[i] ? `0 0 10px ${i % 2 === 0 ? '#00ffff' : '#ff00ff'}` : 'none'
-                         }}
-                         className="aspect-square rounded-[1px] min-h-[4px]"
-                       />
+                       <SingularityNode key={i} index={i} isActive={!!checklist[i]} />
                      ))}
                   </div>
                </CardContent>
@@ -120,7 +127,7 @@ export function Singularity() {
                <CardContent className="space-y-4">
                   <div className="h-32 bg-black/40 rounded border border-white/5 p-3 font-mono text-[8px] overflow-auto space-y-1 text-emerald-400/80">
                      {state?.orchestrationLog?.slice(-8).map((log, i) => (
-                       <div key={i} className="flex gap-2"><span>{">>"}</span><span>{log}</span></div>
+                       <div key={i} className="flex gap-2"><span>{">>"}</span><span className="truncate">{log}</span></div>
                      ))}
                   </div>
                   <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-500">
@@ -174,25 +181,11 @@ export function Singularity() {
                       <span>{isForging ? `${Math.round((forgeStep/3)*100)}%` : "0%"}</span>
                     </div>
                     <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800" />
-                    <Button onClick={() => forgeMutation.mutate()} disabled={isForging} className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest shadow-lg">
-                      {isForging ? "SYNTHESIZING..." : "INITIATE FULL FORMAT FORGE"}
+                    <Button onClick={() => forgeMutation.mutate()} disabled={isForging || completedCount >= 300} className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest shadow-lg">
+                      {isForging ? "SYNTHESIZING..." : completedCount >= 300 ? "SINGULARITY REACHED" : "INITIATE FULL FORMAT FORGE"}
                     </Button>
                   </div>
                </Card>
-            </TabsContent>
-            <TabsContent value="kyber" className="pt-6">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="glass-dark border-rose-500/20 p-8 space-y-4 text-center">
-                     <KeyRound className="size-8 text-rose-500 mx-auto" />
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-400">Post-Quantum Tunnel</h4>
-                     <p className="text-[9px] text-slate-500 italic">Kyber-1024 / AES-NI Hardware Shield Active</p>
-                  </Card>
-                  <Card className="glass-dark border-emerald-500/20 p-8 space-y-4 text-center">
-                     <ShieldCheck className="size-8 text-emerald-500 mx-auto" />
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Integrity Pool</h4>
-                     <p className="text-[9px] text-slate-500 italic">Self-Healing Hash Registry: 100% Consistent</p>
-                  </Card>
-               </div>
             </TabsContent>
           </Tabs>
         </div>
