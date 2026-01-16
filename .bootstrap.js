@@ -84,7 +84,8 @@ function runSetupCommands() {
     "bun add uuid",
     "bun add @tanstack/react-query",
     "bun add canvas-confetti",
-    "bun add @types/canvas-confetti"
+    "bun add @types/canvas-confetti",
+    "bun add @types/w3c-web-usb"
 ];
     
     if (commands.length === 0) {
