@@ -223,7 +223,9 @@ export default {
   		animation: {
   			'fade-in': 'fade-in 0.6s ease-out',
   			'slide-up': 'slide-up 0.4s ease-out',
+  			'slide-up-slow': 'slide-up 2s ease-out',
   			'scale-in': 'scale-in 0.3s ease-out',
+  			'spin-slow': 'spin 8s linear infinite',
   			shimmer: 'shimmer 2s infinite',
   			glow: 'glow 2s ease-in-out infinite',
   			float: 'float 3s ease-in-out infinite',

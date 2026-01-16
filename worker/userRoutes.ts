@@ -15,6 +15,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const data = await stub.updateProjectState(body);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
+    app.post('/api/singularity/one-click', async (c) => {
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.singularityOneClick();
+        return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
+    });
     app.post('/api/codex/custom', async (c) => {
         const body = await c.req.json() as CodexItem;
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
