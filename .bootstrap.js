@@ -79,7 +79,8 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun add @xyflow/react",
-    "bun add lucide-react framer-motion recharts"
+    "bun add lucide-react framer-motion recharts",
+    "bun add clsx tailwind-merge"
 ];
     
     if (commands.length === 0) {
