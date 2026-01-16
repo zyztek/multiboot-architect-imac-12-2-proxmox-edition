@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, ShieldCheck, Layers, Box } from "lucide-react";
+import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, Layers, Box, Monitor, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -16,6 +16,7 @@ export function AppSidebar(): JSX.Element {
   const menuItems = [
     { path: "/", icon: Home, label: "Mission Control" },
     { path: "/proxmox", icon: LayoutDashboard, label: "Cluster View" },
+    { path: "/visionary", icon: Monitor, label: "Visionary" },
     { path: "/orchestrator", icon: Layers, label: "Orchestrator" },
     { path: "/report", icon: BookOpen, label: "Intelligence" },
     { path: "/tools", icon: PenTool, label: "Script Forge" },
@@ -52,7 +53,7 @@ export function AppSidebar(): JSX.Element {
                   <Link to={item.path} className="flex items-center gap-3">
                     <item.icon className={`size-4 ${location.pathname === item.path ? 'text-blue-400' : 'text-slate-500 group-hover:text-white'}`} />
                     <span className="font-medium tracking-tight text-sm">{item.label}</span>
-                    {item.label === 'Orchestrator' && (
+                    {item.label === 'Visionary' && (
                       <span className="ml-auto size-1.5 rounded-full bg-blue-500 animate-pulse" />
                     )}
                   </Link>
@@ -63,13 +64,17 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-6 border-t border-white/5 bg-black/20">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono font-bold animate-pulse">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-mono font-bold animate-pulse">
+            <ShieldCheck className="size-3" />
+            KYBER-LEVEL: 3
+          </div>
+          <div className="flex items-center gap-1.5 text-[9px] text-slate-600 font-mono uppercase font-bold tracking-widest">
             <Box className="size-3" />
-            CLUSTER MODE: ACTIVE
+            CLUSTER: ACTIVE
           </div>
           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="text-[8px] text-slate-700 uppercase font-bold tracking-[0.2em]">Intergalactic Tsunami</div>
+          <div className="text-[8px] text-slate-800 uppercase font-bold tracking-[0.2em]">Quantum Tsunami</div>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -5,6 +5,27 @@ export interface DemoItem {
 }
 export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
+export interface ConsoleSession {
+  vmid: number;
+  name: string;
+  type: 'noVNC' | 'SPICE';
+  url: string;
+  token: string;
+}
+export interface IsoMetadata {
+  id: string;
+  filename: string;
+  size: number;
+  detectedOs: string;
+  architecture: 'amd64' | 'arm64' | 'x86';
+  format: 'iso' | 'qcow2' | 'vmdk' | 'raw' | 'ova';
+  status: 'available' | 'processing' | 'failed';
+}
+export interface KyberConfig {
+  enabled: boolean;
+  keyStrength: 'Level1' | 'Level3' | 'Level5';
+  lastRotation: string;
+}
 export interface ClusterNode {
   id: string;
   name: string;
@@ -74,6 +95,9 @@ export interface ProjectState {
   hostStats: ProxmoxHostStats;
   sensors: SensorData[];
   orchestrationLog: string[];
+  isoLibrary: IsoMetadata[];
+  visionarySessions: ConsoleSession[];
+  kyber: KyberConfig;
   lastUpdated: string;
 }
 export interface ApiResponse<T = unknown> {
