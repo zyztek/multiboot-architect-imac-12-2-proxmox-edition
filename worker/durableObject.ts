@@ -1,6 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { DemoItem, ProjectState, VmConfig, ClusterNode, SensorData } from '@shared/types';
-import { MOCK_ITEMS } from '@shared/mock-data';
+import type { ProjectState, VmConfig, ClusterNode } from '@shared/types';
 export class GlobalDurableObject extends DurableObject {
     async getProjectState(): Promise<ProjectState> {
       const state = await this.ctx.storage.get("project_state");
@@ -9,6 +8,9 @@ export class GlobalDurableObject extends DurableObject {
         if (!current.nodes) current.nodes = this.getDefaultNodes();
         if (!current.sensors) current.sensors = [];
         if (!current.orchestrationLog) current.orchestrationLog = ["Cluster initialized"];
+        if (!current.isoLibrary) current.isoLibrary = [];
+        if (!current.visionarySessions) current.visionarySessions = [];
+        if (!current.kyber) current.kyber = { enabled: false, keyStrength: 'Level1', lastRotation: new Date().toISOString() };
         return current;
       }
       const defaultState: ProjectState = {
@@ -20,6 +22,11 @@ export class GlobalDurableObject extends DurableObject {
         hostStats: this.getMockStats(),
         sensors: [],
         orchestrationLog: ["First boot successful"],
+        isoLibrary: [],
+        visionarySessions: [],
+        kyber: { enabled: false, keyStrength: 'Level1', lastRotation: new Date().toISOString() },
+        usbLabel: 'PROXMOX',
+        isoPath: 'C:\\ISOs',
         lastUpdated: new Date().toISOString()
       };
       await this.ctx.storage.put("project_state", defaultState);
@@ -52,15 +59,5 @@ export class GlobalDurableObject extends DurableObject {
       const updated = { ...state, lastUpdated: new Date().toISOString() };
       await this.ctx.storage.put("project_state", updated);
       return updated;
-    }
-    async updateHostStats(): Promise<ProjectState> {
-      const state = await this.getProjectState();
-      state.hostStats = {
-        ...state.hostStats,
-        cpu_usage: Math.random() * 40 + 5,
-        net_in: state.hostStats.net_in + Math.random() * 2,
-        net_out: state.hostStats.net_out + Math.random() * 2
-      };
-      return await this.updateProjectState(state);
     }
 }

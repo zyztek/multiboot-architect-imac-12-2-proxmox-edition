@@ -98,6 +98,8 @@ export interface ProjectState {
   isoLibrary: IsoMetadata[];
   visionarySessions: ConsoleSession[];
   kyber: KyberConfig;
+  usbLabel?: string;
+  isoPath?: string;
   lastUpdated: string;
 }
 export interface ApiResponse<T = unknown> {
