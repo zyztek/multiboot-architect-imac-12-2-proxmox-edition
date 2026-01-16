@@ -2,7 +2,7 @@ import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
 enableMapSet();
 import React, { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import '@/index.css';
@@ -22,9 +22,16 @@ const queryClient = new QueryClient({
     },
   },
 });
+declare global {
+  interface Window {
+    __REACT_ROOT__?: Root;
+  }
+}
 const container = document.getElementById('root')!;
-const root = createRoot(container);
-root.render(
+if (!window.__REACT_ROOT__) {
+  window.__REACT_ROOT__ = createRoot(container);
+}
+window.__REACT_ROOT__.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>

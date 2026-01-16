@@ -88,7 +88,7 @@ export function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black z-10" />
               <div className="p-4 space-y-2 animate-slide-up-slow">
                 {state?.evolutionQueue?.length ? state.evolutionQueue.map((task, i) => (
-                  <div key={i} className="flex items-center gap-3 text-[10px] font-mono text-blue-300/60">
+                  <div key={`task-${i}`} className="flex items-center gap-3 text-[10px] font-mono text-blue-300/60">
                     <span className="text-blue-500">[{new Date().toLocaleTimeString()}]</span>
                     <span>{task}</span>
                   </div>
