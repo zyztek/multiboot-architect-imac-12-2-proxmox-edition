@@ -2,6 +2,8 @@ import React from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ParticleBackground } from "@/components/ParticleBackground";
+import { MouseTrail } from "@/components/MouseTrail";
 type AppLayoutProps = {
   children: React.ReactNode;
   container?: boolean;
@@ -13,8 +15,10 @@ export function AppLayout({ children, container = false, className, contentClass
     <TooltipProvider delayDuration={0}>
       <SidebarProvider defaultOpen={false}>
         <AppSidebar />
+        <ParticleBackground />
+        <MouseTrail />
         <SidebarInset className={className}>
-          <div className="absolute left-2 top-2 z-20">
+          <div className="absolute left-4 top-4 z-20">
             <SidebarTrigger />
           </div>
           {container ? (

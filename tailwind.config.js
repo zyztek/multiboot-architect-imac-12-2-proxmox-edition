@@ -21,6 +21,12 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+        cyberVoid: '#0a0a0a',
+        nebulaPurple: '#1a0033',
+        violet: '#6600ff',
+        cyanNeon: '#00ffff',
+        magentaPulse: '#ff00ff',
+        goldLux: '#ffd700',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -77,7 +83,9 @@ export default {
   			glow: '0 0 20px -5px rgba(99, 102, 241, 0.4)',
   			'glow-lg': '0 0 40px -10px rgba(99, 102, 241, 0.3)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
-  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        neonGlow: '0 0 20px #ff00ff',
+        glassLux: '0 8px 32px rgba(244, 128, 32, 0.3)'
   		},
   		keyframes: {
   			'fade-in': {
@@ -95,7 +103,15 @@ export default {
   			float: {
   				'0%, 100%': { transform: 'translateY(0px)' },
   				'50%': { transform: 'translateY(-10px)' }
-  			}
+  			},
+        neonOrbit: {
+          '0%': { transform: 'rotate(0deg) translateX(10px) rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg) translateX(10px) rotate(-360deg)' }
+        },
+        hoverLift: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' }
+        }
   		},
   		animation: {
   			'fade-in': 'fade-in 0.6s ease-out',
@@ -103,6 +119,8 @@ export default {
   			'spin-slow': 'spin 8s linear infinite',
   			shimmer: 'shimmer 2s infinite',
   			float: 'float 3s ease-in-out infinite',
+        'orbit-pulse': 'neonOrbit 4s linear infinite',
+        'hover-lift': 'hoverLift 2s ease-in-out infinite'
   		}
   	}
   },

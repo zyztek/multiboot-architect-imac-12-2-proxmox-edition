@@ -9,6 +9,7 @@ import { History, Binary, KeyRound, ShieldCheck, Activity, Zap } from 'lucide-re
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
 import { CosmosExportPanel } from '@/components/CosmosExportPanel';
 import { OracleCommander } from '@/components/OracleCommander';
 import type { ApiResponse, ProjectState } from '@shared/types';
@@ -58,6 +59,14 @@ export function Singularity() {
       if (!data || !isMounted.current) return;
       toast.success("Wormhole Forge Complete: Multi-Format ISO/RAW Ready");
       setIsForging(false);
+      if (completedCount >= 300) {
+        confetti({
+          particleCount: 200,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#ffd700', '#00ffff', '#ff00ff']
+        });
+      }
       setForgeStep(0);
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
     },
@@ -90,15 +99,15 @@ export function Singularity() {
                   <span className="text-xs font-mono text-blue-400">{completedCount}/300</span>
                </CardHeader>
                <CardContent className="p-6">
-                  <div className="grid grid-cols-15 md:grid-cols-30 gap-1.5">
+                  <div className="grid grid-cols-15 md:grid-cols-30 gap-2">
                      {Array.from({ length: 300 }).map((_, i) => (
                        <motion.div
                          key={i}
                          initial={{ opacity: 0.1 }}
                          animate={{
                            opacity: checklist[i] ? 1 : 0.2,
-                           backgroundColor: checklist[i] ? '#3b82f6' : '#1e293b',
-                           boxShadow: checklist[i] ? '0 0 8px rgba(59, 130, 246, 0.5)' : 'none'
+                           backgroundColor: checklist[i] ? (i % 2 === 0 ? '#00ffff' : '#ff00ff') : '#1e293b',
+                           boxShadow: checklist[i] ? `0 0 10px ${i % 2 === 0 ? '#00ffff' : '#ff00ff'}` : 'none'
                          }}
                          className="aspect-square rounded-[1px] min-h-[4px]"
                        />

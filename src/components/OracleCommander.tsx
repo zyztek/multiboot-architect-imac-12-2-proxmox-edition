@@ -59,11 +59,11 @@ export function OracleCommander() {
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="glass-dark border border-blue-500/30 px-4 py-2 rounded-2xl shadow-glow mb-2"
+            className="glass-dark border border-magentaPulse/30 px-6 py-3 rounded-3xl shadow-neonGlow mb-4"
           >
             <div className="flex items-center gap-2">
-              {isSynthesizing ? <Sparkles className="size-3 text-purple-400 animate-spin" /> : <Terminal className="size-3 text-blue-400" />}
-              <span className={`text-[10px] font-mono uppercase tracking-widest italic ${isSynthesizing ? 'text-purple-400' : 'text-blue-400'}`}>
+              {isSynthesizing ? <Sparkles className="size-4 text-magentaPulse animate-spin" /> : <Terminal className="size-4 text-cyanNeon" />}
+              <span className={`text-[11px] font-mono uppercase tracking-widest italic font-bold ${isSynthesizing ? 'text-magentaPulse' : 'text-cyanNeon'}`}>
                 {lastWords}
               </span>
             </div>
@@ -72,11 +72,11 @@ export function OracleCommander() {
       </AnimatePresence>
       <motion.button
         onClick={handleToggle}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.15, rotate: 5 }}
+        whileTap={{ scale: 0.85 }}
         className={`size-16 rounded-full flex items-center justify-center relative transition-all duration-500 ${
           isActive
-            ? 'bg-blue-600 shadow-[0_0_30px_rgba(37,99,235,0.6)] ring-2 ring-blue-400'
+            ? 'bg-gradient-to-br from-magentaPulse to-violet shadow-neonGlow ring-2 ring-white/20'
             : 'bg-slate-900 border border-white/10 hover:border-blue-500/50'
         }`}
       >
@@ -89,11 +89,11 @@ export function OracleCommander() {
               exit={{ scale: 0 }}
               className="relative"
             >
-              <Radio className={`size-6 text-white ${isSynthesizing ? 'animate-bounce' : 'animate-pulse'}`} />
+              <Radio className={`size-7 text-white ${isSynthesizing ? 'animate-bounce' : 'animate-pulse'}`} />
               <motion.div
                 animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 bg-white rounded-full -z-10"
+                className="absolute inset-0 bg-cyanNeon rounded-full -z-10"
               />
             </motion.div>
           ) : (

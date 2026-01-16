@@ -53,14 +53,14 @@ export function Visionary() {
         </div>
         <AnimatePresence mode="wait">
           {activeView === 'grid' ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {vms.map((vm) => (
-                <Card key={vm.vmid} className="glass-dark border-white/10 overflow-hidden group hover:border-blue-500/50 transition-all">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {vms.map((vm) => (
+                <Card key={vm.vmid} className="glass3d glass-dark border-white/10 overflow-hidden group hover:border-cyanNeon/50 transition-all hover-morph">
                   <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-black/40">
                     <CardTitle className="text-sm font-mono flex items-center gap-2">
                       <div className={`size-2 rounded-full ${vm.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
@@ -91,10 +91,10 @@ export function Visionary() {
                   </CardContent>
                   <div className="p-3 bg-black/60 border-t border-white/5 flex justify-between items-center">
                     <div className="flex gap-2 text-[9px] font-mono text-slate-500">
-                      <span>FPS: 60</span>
-                      <span>LAT: 4ms</span>
+                      <span className="text-cyanNeon">FPS: 120</span>
+                      <span className="text-magentaPulse">LAT: 2ms</span>
                     </div>
-                    <Button variant="ghost" className="h-6 text-[9px] uppercase text-blue-400 hover:bg-blue-400/10">Input Sync</Button>
+                    <Button variant="ghost" className="h-6 text-[9px] uppercase text-goldLux hover:bg-goldLux/10 font-bold">Input Sync</Button>
                   </div>
                 </Card>
               ))}
@@ -111,12 +111,12 @@ export function Visionary() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <Card className="glass-dark border-white/10 text-white p-8 h-[600px]">
+              <Card className="glass3d glass-dark border-white/10 text-white p-12 h-[600px] shadow-neonGlow">
                 <CardHeader className="px-0">
                   <CardTitle className="text-xl flex items-center gap-3">
-                    <Brain className="size-6 text-rose-500" /> Synapse Latency Heatmap
+                    <Brain className="size-8 text-magentaPulse" /> Synapse Latency Heatmap
                   </CardTitle>
-                  <p className="text-xs text-slate-500 uppercase tracking-widest mt-1">Cross-Node Neural Performance Grid</p>
+                  <p className="text-xs text-goldLux uppercase tracking-widest mt-1 font-bold">Cross-Node Neural Performance Grid</p>
                 </CardHeader>
                 <div className="h-full w-full">
                   <ResponsiveContainer width="100%" height="80%">
@@ -128,16 +128,16 @@ export function Visionary() {
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             return (
-                              <div className="glass-dark border-white/10 p-2 text-[10px]">
-                                <p className="text-blue-400 font-bold uppercase">{payload[0].payload.node}</p>
-                                <p>Latency: {Math.round(payload[0].value as number)}ms</p>
+                              <div className="glass-dark border-magentaPulse/50 p-4 text-[10px] shadow-neonGlow">
+                                <p className="text-cyanNeon font-bold uppercase">{payload[0].payload.node}</p>
+                                <p className="text-white">Latency: {Math.round(payload[0].value as number)}ms</p>
                               </div>
                             );
                           }
                           return null;
                         }}
                       />
-                      <Scatter name="Heatmap" data={heatmapData} fill="#ef4444" fillOpacity={0.6} />
+                      <Scatter name="Heatmap" data={heatmapData} fill="#ffd700" fillOpacity={0.8} />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </div>

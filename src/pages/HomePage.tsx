@@ -44,29 +44,33 @@ export function HomePage() {
   const isComplete = completed >= 300;
   return (
     <AppLayout className="bg-slate-950 text-slate-100 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-12 pb-32">
-        <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden rounded-[40px] border border-white/10 bg-black/60 shadow-2xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-16 pb-32">
+        <div className="relative h-[540px] w-full flex items-center justify-center overflow-hidden rounded-[50px] border border-white/10 bg-black/40 shadow-2xl glass3d">
            <div className={`absolute inset-0 transition-opacity duration-1000 ${isComplete ? 'opacity-30' : 'opacity-10'} bg-[radial-gradient(circle_at_50%_50%,#3b82f6,transparent)]`} />
            <div className="relative z-10 flex flex-col items-center text-center">
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                transition={{ 
+                  opacity: { duration: 1 },
+                  rotate: { duration: 180, repeat: Infinity, ease: "linear" } 
+                }}
                 className="size-80 border border-white/5 rounded-full flex items-center justify-center relative"
               >
                 <div className={`absolute inset-0 border-t-2 ${isComplete ? 'border-purple-500' : 'border-blue-500/20'} rounded-full animate-spin-slow`} />
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className={`size-56 rounded-full bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/10 flex items-center justify-center backdrop-blur-3xl cursor-pointer transition-shadow duration-1000 ${isComplete ? 'shadow-[0_0_80px_rgba(168,85,247,0.4)]' : 'shadow-glow-lg'}`}
+                  className={`size-56 rounded-full bg-gradient-to-br from-cyanNeon/5 to-magentaPulse/5 border border-white/10 flex items-center justify-center backdrop-blur-3xl cursor-pointer transition-shadow duration-1000 ${isComplete ? 'shadow-[0_0_80px_rgba(255,0,255,0.4)]' : 'shadow-glow-lg'}`}
                   onClick={() => navigate('/singularity')}
                 >
                   <Orbit className={`size-24 transition-colors duration-1000 ${isComplete ? 'text-purple-400 animate-float' : 'text-blue-400 floating'}`} />
-                  <div className={`absolute -bottom-4 ${isComplete ? 'bg-purple-600' : 'bg-blue-600'} text-[8px] font-black uppercase tracking-tighter px-4 py-1.5 rounded-full transition-colors`}>
+                  <div className={`absolute -bottom-4 ${isComplete ? 'bg-magentaPulse' : 'bg-cyanNeon text-black'} text-[8px] font-black uppercase tracking-tighter px-4 py-1.5 rounded-full shadow-neonGlow`}>
                     {isComplete ? 'Singularity Stabilized' : 'Eternal Heartbeat Active'}
                   </div>
                 </motion.div>
               </motion.div>
-              <div className="mt-12 space-y-4">
-                <h1 className="text-8xl font-black tracking-tighter uppercase italic bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-700">Galaxy Core</h1>
+              <div className="mt-16 space-y-4">
+                <h1 className="text-9xl font-black tracking-tighter uppercase italic text-gold drop-shadow-2xl">Galaxy Core</h1>
                 <div className="flex items-center justify-center gap-4">
                   <InfinityIcon className="size-4 text-blue-500" />
                   <p className="text-blue-500 font-mono text-[9px] tracking-[0.8em] uppercase">iMac 12,2 Self-Evolving Architect</p>
