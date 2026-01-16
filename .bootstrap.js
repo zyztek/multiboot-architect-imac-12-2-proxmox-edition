@@ -83,7 +83,8 @@ function runSetupCommands() {
     "bun add clsx tailwind-merge",
     "bun add uuid",
     "bun add @tanstack/react-query",
-    "bun add canvas-confetti"
+    "bun add canvas-confetti",
+    "bun add @types/canvas-confetti"
 ];
     
     if (commands.length === 0) {
