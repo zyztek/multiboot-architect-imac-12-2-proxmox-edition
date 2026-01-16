@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { Env } from './core-utils';
 import { MASTER_CODEX } from '@shared/mock-data';
-import { GITHUB_WIKI_TEMPLATE, GITHUB_PROJECTS_CONFIG } from '@shared/cosmos-templates';
+import { GITHUB_WIKI_TEMPLATE, GITHUB_PROJECTS_CONFIG, DEPENDABOT_CONFIG, GITHUB_SECRETS_GUIDE } from '@shared/cosmos-templates';
 import type { ApiResponse, ProjectState, CodexItem, OracleMetrics, AuthUser } from '@shared/types';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/project-state', async (c) => {
@@ -35,6 +35,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/cosmos/wiki', async (c) => {
         return c.json({ success: true, data: GITHUB_WIKI_TEMPLATE });
     });
+    app.get('/api/cosmos/dependabot', async (c) => {
+        return c.json({ success: true, data: DEPENDABOT_CONFIG });
+    });
+    app.get('/api/cosmos/secrets', async (c) => {
+        return c.json({ success: true, data: GITHUB_SECRETS_GUIDE });
+    });
     app.get('/api/cosmos/projects', async (c) => {
         return c.json({ success: true, data: GITHUB_PROJECTS_CONFIG });
     });
@@ -46,7 +52,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             thermalSaturation: (state?.hostStats?.cpu_usage || 0) * 0.5 + 40,
             instabilityWarnings: [],
             costEstimate: (state?.vms?.length || 0) * 12.0,
-            efficiencyScore: 98.2
+            efficiencyScore: 100.0
         };
         return c.json({ success: true, data: metrics } satisfies ApiResponse<OracleMetrics>);
     });

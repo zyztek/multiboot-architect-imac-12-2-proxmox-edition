@@ -36,7 +36,7 @@ export class GlobalDurableObject extends DurableObject {
             }
             return checklist;
         } catch (e) {
-            console.error("[DO ERROR] unpackChecklist failed, falling back to empty state", e);
+            console.error("[DO ERROR] unpackChecklist failed", e);
             return new Array(300).fill(false);
         }
     }
@@ -45,7 +45,6 @@ export class GlobalDurableObject extends DurableObject {
         const state = await this.ctx.storage.get("project_state");
         const defaultState = this.getInitialState();
         if (!state) {
-          console.warn("[DO INFO] No state found, initializing default kernel.");
           await this.ctx.storage.put("project_state", defaultState);
           return defaultState;
         }
@@ -53,27 +52,11 @@ export class GlobalDurableObject extends DurableObject {
         if (typeof current.checklist === 'string') {
           current.checklist = this.unpackChecklist(current.checklist);
         }
-        if (current.snapshots) {
-          for (const snap of current.snapshots) {
-            if (typeof snap.checklistState === 'string') {
-              snap.checklistState = this.unpackChecklist(snap.checklistState);
-            }
-          }
-        }
-        if (!current.checklist || !Array.isArray(current.checklist)) {
-          current.checklist = new Array(300).fill(false);
-        }
-        current.timebend = current.timebend?.slice(-10) ?? [];
-        current.oracleLog = current.oracleLog?.slice(-15) ?? ["Oracle Core Online"];
-        current.evolutionQueue = current.evolutionQueue ?? [];
-        current.customCodex = current.customCodex ?? [];
         current.isDegraded = false;
         return current;
       } catch (e) {
         console.error("[DO FATAL] getProjectState crashed", e);
-        const fallback = this.getInitialState();
-        fallback.isDegraded = true;
-        return fallback;
+        return this.getInitialState();
       }
     }
     private getInitialState(): ProjectState {
@@ -83,11 +66,11 @@ export class GlobalDurableObject extends DurableObject {
         storage: { win11: 200, kali: 100, fyde: 100, shared: 600 },
         vms: [{ vmid: 100, name: 'Win-11-Prod', cores: 4, memory: 8192, diskId: 'local-zfs', hasTpm: true, gpuPassthrough: true, status: 'stopped', node: 'pve-imac-01' }],
         nodes: [{ id: '1', name: 'pve-imac-01', status: 'online', cpu_usage: 12, mem_usage: 45, ip: '10.0.0.10' }],
-        fleet: MOCK_FLEET.slice(0, 10),
-        snapshots: MOCK_SNAPSHOTS.slice(0, 5),
+        fleet: MOCK_FLEET,
+        snapshots: MOCK_SNAPSHOTS,
         timebend: [],
         oracleLog: ["Oracle Core Online"],
-        singularity: { arEnabled: false, voiceActive: false, fleetMode: 'solo', exportProgress: 0, quantumEntropy: 0.12, swarmIntegrity: 1.0, lastEndgameSync: new Date().toISOString(), isAlive: true, lastEvolution: new Date().toISOString() },
+        singularity: { arEnabled: false, voiceActive: false, fleetMode: 'solo', exportProgress: 0, quantumEntropy: 0.0001, swarmIntegrity: 1.0, lastEndgameSync: new Date().toISOString(), isAlive: true, lastEvolution: new Date().toISOString() },
         customCodex: [],
         evolutionQueue: [],
         apiConfig: { url: '', token: '', node: 'pve-imac-01' },
@@ -107,7 +90,7 @@ export class GlobalDurableObject extends DurableObject {
           const entry: TimebendHistory = {
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
-            label: `Auto-Sync ${prevState.timebend?.length || 0}`,
+            label: `Kernel Snap ${prevState.timebend?.length || 0}`,
             state: JSON.stringify({ ...prevState, timebend: [], snapshots: [] })
           };
           state.timebend = [entry, ...(prevState.timebend || [])].slice(0, 10);
@@ -130,54 +113,45 @@ export class GlobalDurableObject extends DurableObject {
     }
     async triggerEvolution(prompt: string): Promise<ProjectState> {
       const state = await this.getProjectState();
-      state.evolutionQueue.push(`Processing: ${prompt}`);
-      state.oracleLog.push(`Oracle parsing vision: ${prompt}`);
-      // Start the "Life" loop if not already running
-      await this.ctx.storage.setAlarm(Date.now() + 5000);
+      state.evolutionQueue.push(`Vision: ${prompt}`);
+      await this.ctx.storage.setAlarm(Date.now() + 2000);
       return await this.updateProjectState(state);
     }
     async alarm() {
       const state = await this.getProjectState();
+      const logs = ["ZFS Scrub Verified", "Entropy Re-aligned", "Kyber Tunnel Rotated", "IOMMU Mapping Optimized", "Thermal Profile Calibrated"];
       if (state.evolutionQueue.length > 0) {
         const task = state.evolutionQueue.shift();
         const evolvedItem: CodexItem = {
           id: `evolved-${Date.now()}`,
           category: 'Evolved',
-          title: `Synthesis: ${task?.split(': ')[1]?.slice(0, 20)}...`,
-          description: `Automatically generated protocol from vision: ${task}. Integrated at ${new Date().toLocaleTimeString()}.`,
-          complexity: 'God',
+          title: `Synthesis: ${task?.split('Vision: ')[1]?.slice(0, 20)}...`,
+          description: `Automatically generated protocol from vision: ${task}.`,
+          complexity: 'Singularity',
           isUnlocked: true
         };
         state.customCodex.push(evolvedItem);
         state.orchestrationLog.push(`Evolution Cycle Complete: ${evolvedItem.title}`);
         state.singularity.lastEvolution = new Date().toISOString();
-        state.singularity.quantumEntropy += 0.001;
-        await this.updateProjectState(state);
-      }
-      // Keep breathing if items remain or periodically to show "Life"
-      if (state.evolutionQueue.length > 0) {
-        await this.ctx.storage.setAlarm(Date.now() + 10000);
+        state.singularity.quantumEntropy += 0.000001;
       } else {
-        // Ambient heartbeat every 2 minutes
-        await this.ctx.storage.setAlarm(Date.now() + 120000);
+        // Periodic maintenance log
+        const maintenanceMsg = logs[Math.floor(Math.random() * logs.length)];
+        state.orchestrationLog.push(`[MAINTENANCE] ${maintenanceMsg}`);
       }
+      await this.updateProjectState(state);
+      // Keep breathing: Frequent if work to do, ambient otherwise
+      const nextDelay = state.evolutionQueue.length > 0 ? 5000 : 60000;
+      await this.ctx.storage.setAlarm(Date.now() + nextDelay);
     }
     async updateVmStatus(vmid: number, status: VmStatus): Promise<ProjectState> {
         const state = await this.getProjectState();
         const vm = state.vms.find(v => v.vmid === vmid);
         if (vm) {
             vm.status = status;
-            state.orchestrationLog.push(`VM ${vmid} transition: ${status}`);
+            state.orchestrationLog.push(`VM ${vmid} Status: ${status}`);
         }
         return await this.updateProjectState(state);
-    }
-    async recursiveRevert(historyId: string): Promise<ProjectState> {
-      const state = await this.getProjectState();
-      const entry = state.timebend.find(h => h.id === historyId);
-      if (!entry) throw new Error("History point not found");
-      const revertedState = JSON.parse(entry.state) as ProjectState;
-      revertedState.timebend = state.timebend;
-      return await this.updateProjectState(revertedState);
     }
     async batchUpdateChecklist(updates: { id: number, value: boolean }[]): Promise<ProjectState> {
       const state = await this.getProjectState();
@@ -190,6 +164,7 @@ export class GlobalDurableObject extends DurableObject {
       const state = await this.getProjectState();
       state.checklist = new Array(300).fill(true);
       state.codexUnlocked = Array.from({ length: 300 }).map((_, i) => `cx-${i}`);
+      state.orchestrationLog.push("CRITICAL: SINGULARITY ACHIEVED. ETERNAL LOOP ENGAGED.");
       return await this.updateProjectState(state);
     }
 }

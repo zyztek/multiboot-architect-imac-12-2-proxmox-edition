@@ -16,8 +16,33 @@ jobs:
       - name: Deploy Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+`;
+export const DEPENDABOT_CONFIG = `version: 2
+updates:
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+`;
+export const GITHUB_SECRETS_GUIDE = `# Singularity Secrets Management
+To enable full automation, configure the following secrets in GitHub Repository Settings:
+| Secret Name | Purpose | Example |
+|-------------|---------|---------|
+| PROXMOX_TOKEN | API Access for Orchestrator | root@pam!id=... |
+| SSH_PRIVATE_KEY | Secure Node Access | -----BEGIN RSA... |
+| CLOUDFLARE_API_KEY | Worker/DO Deployment | xxxxxxxxxxxxxxx |
+| COSMOS_PWA_SIGN | PWA Verification Key | singularity_0x1 |
+## Usage in Workflows
+\`\`\`yaml
+env:
+  PVE_TOKEN: ${{ secrets.PROXMOX_TOKEN }}
+\`\`\`
 `;
 export const ANSIBLE_PROXMOX_DEPLOY = `---
 - name: Proxmox iMac Singularity Provisioning

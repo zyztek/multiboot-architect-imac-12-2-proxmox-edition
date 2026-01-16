@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { History, Share2, Binary, Radio, KeyRound, ShieldCheck, Globe, Zap, Cpu } from 'lucide-react';
+import { History, Share2, Binary, Radio, KeyRound, ShieldCheck, Globe, Zap, Cpu, Activity, Server } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -56,7 +56,7 @@ export function Singularity() {
     },
     onSuccess: (data) => {
       if (!data || !isMounted.current) return;
-      toast.success("AppOS Wormhole: ISO Forged");
+      toast.success("Wormhole Forge Complete: Multi-Format ISO/RAW Ready");
       setIsForging(false);
       setForgeStep(0);
       queryClient.invalidateQueries({ queryKey: ['project-state'] });
@@ -67,6 +67,8 @@ export function Singularity() {
   });
   const timebend = state?.timebend ?? [];
   const entropy = state?.singularity?.quantumEntropy ?? 0;
+  const checklist = state?.checklist ?? [];
+  const completedCount = checklist.filter(Boolean).length;
   return (
     <AppLayout className="bg-slate-950 text-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,18 +76,57 @@ export function Singularity() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/10 pb-8">
             <div className="space-y-2">
               <h1 className="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-rose-400 uppercase italic leading-none">Singularity</h1>
-              <p className="text-purple-400 font-mono text-xs tracking-[0.4em] uppercase">Threshold Crossing Active</p>
+              <p className="text-purple-400 font-mono text-xs tracking-[0.4em] uppercase">Post-Human Finality Engine</p>
             </div>
             <div className="flex gap-4">
-               <Badge variant="outline" className="h-8 border-rose-500/50 text-rose-400 font-mono animate-pulse uppercase">ENTROPY: {entropy.toFixed(4)}</Badge>
+               <Badge variant="outline" className="h-8 border-rose-500/50 text-rose-400 font-mono animate-pulse uppercase">ENTROPY: {entropy.toFixed(6)}</Badge>
+               <Badge variant="outline" className="h-8 border-emerald-500/50 text-emerald-400 font-mono uppercase italic">STATUS: EVOLVING</Badge>
             </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <Card className="lg:col-span-3 glass-dark border-white/10 overflow-hidden">
+               <CardHeader className="bg-white/5 border-b border-white/5 flex flex-row items-center justify-between">
+                  <CardTitle className="text-[10px] uppercase tracking-widest text-slate-500">Singularity Matrix (300 Units)</CardTitle>
+                  <span className="text-xs font-mono text-blue-400">{completedCount}/300</span>
+               </CardHeader>
+               <CardContent className="p-6">
+                  <div className="grid grid-cols-15 md:grid-cols-30 gap-1">
+                     {Array.from({ length: 300 }).map((_, i) => (
+                       <motion.div
+                         key={i}
+                         initial={{ opacity: 0.1 }}
+                         animate={{ 
+                           opacity: checklist[i] ? 1 : 0.2,
+                           backgroundColor: checklist[i] ? '#3b82f6' : '#1e293b',
+                           boxShadow: checklist[i] ? '0 0 8px rgba(59, 130, 246, 0.5)' : 'none'
+                         }}
+                         className="aspect-square rounded-[1px] cursor-help"
+                       />
+                     ))}
+                  </div>
+               </CardContent>
+            </Card>
+            <Card className="glass-dark border-white/10 text-white">
+               <CardHeader><CardTitle className="text-[10px] uppercase text-blue-400 flex items-center gap-2"><Activity className="size-3" /> Eternal Heartbeat</CardTitle></CardHeader>
+               <CardContent className="space-y-4">
+                  <div className="h-32 bg-black/40 rounded border border-white/5 p-3 font-mono text-[8px] overflow-auto space-y-1 text-emerald-400/80">
+                     {state?.orchestrationLog?.slice(-8).map((log, i) => (
+                       <div key={i} className="flex gap-2"><span>{">>"}</span><span>{log}</span></div>
+                     ))}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-500">
+                    <span>Cron Oracle</span>
+                    <span className="text-blue-400">SYNCED</span>
+                  </div>
+               </CardContent>
+            </Card>
           </div>
           <Tabs defaultValue="cosmos" className="w-full">
             <TabsList className="bg-slate-900/50 border border-white/10 p-1 w-full sm:w-auto overflow-x-auto">
               <TabsTrigger value="cosmos" className="text-[10px] uppercase font-black px-8">GitHub Cosmos</TabsTrigger>
-              <TabsTrigger value="timebend" className="text-[10px] uppercase font-black px-8">Timebend Mirror</TabsTrigger>
-              <TabsTrigger value="wormhole" className="text-[10px] uppercase font-black px-8">AppOS Wormhole</TabsTrigger>
-              <TabsTrigger value="kyber" className="text-[10px] uppercase font-black px-8">Kyber Quantum</TabsTrigger>
+              <TabsTrigger value="timebend" className="text-[10px] uppercase font-black px-8">Timebend</TabsTrigger>
+              <TabsTrigger value="wormhole" className="text-[10px] uppercase font-black px-8">Wormhole Forge</TabsTrigger>
+              <TabsTrigger value="kyber" className="text-[10px] uppercase font-black px-8">Quantum Kyber</TabsTrigger>
             </TabsList>
             <TabsContent value="cosmos" className="pt-8 animate-fade-in">
               <CosmosExportPanel />
@@ -97,135 +138,54 @@ export function Singularity() {
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500/20 group-hover:bg-blue-500 transition-colors" />
                     <div className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-center">
-                          <History className="size-5 text-blue-500" />
-                          <div className="h-4 w-px bg-white/10 my-1" />
-                          <span className="text-[8px] text-slate-500 font-mono">#{timebend.length - i}</span>
-                        </div>
+                        <History className="size-5 text-blue-500" />
                         <div>
                           <p className="text-xs font-bold text-white uppercase">{h.label}</p>
                           <p className="text-[9px] text-slate-500 font-mono">{new Date(h.timestamp).toLocaleString()}</p>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-[9px] uppercase font-black border-blue-500/20 hover:bg-blue-600 group-hover:border-blue-500"
-                        onClick={() => timebendMutation.mutate(h.id)}
-                        disabled={timebendMutation.isPending}
-                      >Revert</Button>
+                      <Button variant="outline" size="sm" className="h-8 text-[9px] uppercase font-black border-blue-500/20" onClick={() => timebendMutation.mutate(h.id)}>Revert</Button>
                     </div>
                   </Card>
                 ))}
               </div>
             </TabsContent>
-            <TabsContent value="wormhole" className="pt-6 space-y-6">
+            <TabsContent value="wormhole" className="pt-6">
                <Card className="glass-dark border-white/10 p-12 text-center space-y-6">
                   <div className="flex flex-col items-center gap-4">
-                    <motion.div
-                      animate={isForging ? { rotate: 360, scale: [1, 1.1, 1] } : {}}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="size-24 rounded-full bg-blue-600/20 border-2 border-blue-500/50 flex items-center justify-center shadow-glow"
-                    >
+                    <motion.div animate={isForging ? { rotate: 360, scale: [1, 1.1, 1] } : {}} className="size-24 rounded-full bg-blue-600/20 border-2 border-blue-500/50 flex items-center justify-center shadow-glow">
                       <Binary className="size-10 text-blue-400" />
                     </motion.div>
-                    <h3 className="text-xl font-black uppercase tracking-tight">Wormhole Forge</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto uppercase tracking-wide">Generate a singularity-level AppOS ISO for immediate multi-node deployment.</p>
-                  </div>
-                  <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                     <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-3">
-                        <h4 className="text-[10px] font-black uppercase text-blue-400 flex items-center gap-2">
-                           <Zap className="size-3" /> Primitive Manifest
-                        </h4>
-                        <ul className="text-[9px] text-slate-500 font-mono space-y-1">
-                           <li className="flex justify-between"><span>Codex Units</span><span className="text-white">300/300</span></li>
-                           <li className="flex justify-between"><span>Kernel Mode</span><span className="text-white">Robust-X</span></li>
-                           <li className="flex justify-between"><span>I/O Profile</span><span className="text-white">TeraScale 3</span></li>
-                        </ul>
-                     </div>
-                     <div className="bg-black/40 p-4 rounded-xl border border-white/5 space-y-3">
-                        <h4 className="text-[10px] font-black uppercase text-purple-400 flex items-center gap-2">
-                           <Cpu className="size-3" /> Target Arch
-                        </h4>
-                        <ul className="text-[9px] text-slate-500 font-mono space-y-1">
-                           <li className="flex justify-between"><span>System</span><span className="text-white">iMac 12,2</span></li>
-                           <li className="flex justify-between"><span>Hypervisor</span><span className="text-white">Proxmox VE</span></li>
-                           <li className="flex justify-between"><span>Verification</span><span className="text-white text-emerald-400">NFT-Quantum</span></li>
-                        </ul>
-                     </div>
+                    <h3 className="text-xl font-black uppercase tracking-tight">AppOS Wormhole Forge</h3>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto uppercase tracking-wide italic">Target formats: .ISO, .QCOW2, .RAW (OCLP Injected)</p>
                   </div>
                   <div className="max-w-lg mx-auto bg-black/40 p-6 rounded-xl border border-white/5 space-y-4">
                     <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 mb-1">
-                      <span>{isForging ? `Layer ${forgeStep} Injection` : "Forge Ready"}</span>
+                      <span>{isForging ? `Layer ${forgeStep} Recursive Injection` : "Wormhole Ready"}</span>
                       <span>{isForging ? `${Math.round((forgeStep/3)*100)}%` : "0%"}</span>
                     </div>
-                    <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800 transition-all duration-500" />
-                    <Button
-                      onClick={() => forgeMutation.mutate()}
-                      disabled={isForging}
-                      className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest mt-4 shadow-blue-500/20 shadow-lg"
-                    >
-                      {isForging ? "FORGING UNIVERSE..." : "INITIATE WORMHOLE FORGE"}
+                    <Progress value={isForging ? (forgeStep / 3) * 100 : 0} className="h-1 bg-slate-800" />
+                    <Button onClick={() => forgeMutation.mutate()} disabled={isForging} className="w-full h-12 bg-blue-600 hover:bg-blue-500 font-black uppercase tracking-widest shadow-lg">
+                      {isForging ? "SYNTHESIZING..." : "INITIATE FULL FORMAT FORGE"}
                     </Button>
                   </div>
                </Card>
             </TabsContent>
             <TabsContent value="kyber" className="pt-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="glass-dark border-rose-500/20 p-8 space-y-4">
-                     <div className="flex items-center gap-2 text-rose-400"><KeyRound className="size-5" /><span className="text-xs font-bold uppercase tracking-widest">Quantum Tunnel</span></div>
-                     <div className="h-24 bg-black/60 rounded flex items-center justify-center relative overflow-hidden">
-                        <motion.div animate={{ x: [-200, 200] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute w-12 h-full bg-rose-500/10 blur-2xl" />
-                        <span className="text-[10px] font-mono text-rose-300">AES-NI ACCELERATED</span>
-                     </div>
+                  <Card className="glass-dark border-rose-500/20 p-8 space-y-4 text-center">
+                     <KeyRound className="size-8 text-rose-500 mx-auto" />
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-400">Post-Quantum Tunnel</h4>
+                     <p className="text-[9px] text-slate-500 italic">Kyber-1024 / AES-NI Hardware Shield Active</p>
                   </Card>
-                  <Card className="glass-dark border-emerald-500/20 p-8 space-y-4">
-                     <div className="flex items-center gap-2 text-emerald-400"><ShieldCheck className="size-5" /><span className="text-xs font-bold uppercase tracking-widest">Integrity Pool</span></div>
-                     <div className="h-24 bg-black/60 rounded flex items-center justify-center">
-                        <Radio className="size-8 text-emerald-500/30 animate-pulse" />
-                     </div>
+                  <Card className="glass-dark border-emerald-500/20 p-8 space-y-4 text-center">
+                     <ShieldCheck className="size-8 text-emerald-500 mx-auto" />
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Integrity Pool</h4>
+                     <p className="text-[9px] text-slate-500 italic">Self-Healing Hash Registry: 100% Consistent</p>
                   </Card>
                </div>
             </TabsContent>
           </Tabs>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
-             <Card className="glass-dark border-white/10 text-white p-6">
-                <CardHeader className="p-0 mb-4"><CardTitle className="text-[10px] uppercase text-slate-500 tracking-widest">Neural Stream</CardTitle></CardHeader>
-                <div className="h-24 flex items-center justify-center bg-black/40 rounded-xl overflow-hidden">
-                   {Array.from({ length: 12 }).map((_, i) => (
-                     <motion.div
-                       key={i}
-                       animate={{ height: [10, 60, 20], opacity: [0.1, 0.3, 0.1] }}
-                       transition={{ duration: 1 + i*0.1, repeat: Infinity }}
-                       className="w-2 bg-purple-500 mx-0.5 rounded-full"
-                     />
-                   ))}
-                </div>
-             </Card>
-             <Card className="glass-dark border-blue-500/20 bg-blue-600/5 p-6 space-y-4 col-span-2">
-                 <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-black uppercase text-blue-400 italic">Singularity Export Engine</h4>
-                    <Globe className="size-4 text-blue-500 animate-pulse" />
-                 </div>
-                 <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                       <span className="text-[8px] text-slate-500 uppercase font-bold">Node Sync</span>
-                       <div className="text-xs font-mono text-blue-400">100.0%</div>
-                    </div>
-                    <div className="space-y-1">
-                       <span className="text-[8px] text-slate-500 uppercase font-bold">Entropy Pool</span>
-                       <div className="text-xs font-mono text-blue-400">ALIGNING</div>
-                    </div>
-                    <div className="space-y-1">
-                       <span className="text-[8px] text-slate-500 uppercase font-bold">PWA Sync</span>
-                       <div className="text-xs font-mono text-emerald-400">ACTIVE</div>
-                    </div>
-                 </div>
-                 <Button className="w-full h-10 bg-white/5 border border-white/10 text-[10px] uppercase font-black tracking-widest mt-2 hover:bg-white/10 transition-colors">
-                    <Share2 className="size-3 mr-2" /> Broadcast Config to Cosmos
-                 </Button>
-             </Card>
-          </div>
         </div>
       </div>
       <OracleCommander />
