@@ -15,7 +15,6 @@ export function Visionary() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
-      if (!json.success || !json.data) throw new Error("State sync failed");
       return json.data;
     }
   });
@@ -25,7 +24,6 @@ export function Visionary() {
     z: Math.random() * 100,
     node: i < 25 ? 'node-01' : 'node-02'
   }));
-  const vms = state?.vms ?? [];
   return (
     <AppLayout container className="bg-slate-950 text-slate-100">
       <div className="space-y-8 animate-fade-in">
@@ -35,15 +33,15 @@ export function Visionary() {
             <p className="text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase">Multiverse Console / Live OS Stream</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={() => setActiveView('grid')}
+            <Button 
+              onClick={() => setActiveView('grid')} 
               variant={activeView === 'grid' ? 'default' : 'outline'}
               className="h-8 text-[10px] uppercase px-4 bg-blue-600 hover:bg-blue-500"
             >
               <Monitor className="size-3 mr-2" /> Live Grid
             </Button>
-            <Button
-              onClick={() => setActiveView('neural')}
+            <Button 
+              onClick={() => setActiveView('neural')} 
               variant={activeView === 'neural' ? 'default' : 'outline'}
               className="h-8 text-[10px] uppercase px-4"
             >
@@ -53,14 +51,14 @@ export function Visionary() {
         </div>
         <AnimatePresence mode="wait">
           {activeView === 'grid' ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {vms.map((vm) => (
-                <Card key={vm.vmid} className="glass3d glass-dark border-white/10 overflow-hidden group hover:border-cyanNeon/50 transition-all hover-morph">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {state?.vms.map((vm) => (
+                <Card key={vm.vmid} className="glass-dark border-white/10 overflow-hidden group hover:border-blue-500/50 transition-all">
                   <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-black/40">
                     <CardTitle className="text-sm font-mono flex items-center gap-2">
                       <div className={`size-2 rounded-full ${vm.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
@@ -71,8 +69,8 @@ export function Visionary() {
                   <CardContent className="p-0 aspect-video relative bg-slate-900 flex items-center justify-center overflow-hidden">
                     {vm.status === 'running' ? (
                       <>
-                        <img
-                          src={`https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800`}
+                        <img 
+                          src={`https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800`} 
                           className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all duration-700"
                           alt="Console Stream"
                         />
@@ -91,32 +89,27 @@ export function Visionary() {
                   </CardContent>
                   <div className="p-3 bg-black/60 border-t border-white/5 flex justify-between items-center">
                     <div className="flex gap-2 text-[9px] font-mono text-slate-500">
-                      <span className="text-cyanNeon">FPS: 120</span>
-                      <span className="text-magentaPulse">LAT: 2ms</span>
+                      <span>FPS: 60</span>
+                      <span>LAT: 4ms</span>
                     </div>
-                    <Button variant="ghost" className="h-6 text-[9px] uppercase text-goldLux hover:bg-goldLux/10 font-bold">Input Sync</Button>
+                    <Button variant="ghost" className="h-6 text-[9px] uppercase text-blue-400 hover:bg-blue-400/10">Input Sync</Button>
                   </div>
                 </Card>
               ))}
-              {vms.length === 0 && (
-                <div className="col-span-full p-12 text-center text-slate-500 font-mono uppercase tracking-widest border border-dashed border-white/10 rounded-xl">
-                  No active virtualizations detected
-                </div>
-              )}
             </motion.div>
           ) : (
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <Card className="glass3d glass-dark border-white/10 text-white p-12 h-[600px] shadow-neonGlow">
+              <Card className="glass-dark border-white/10 text-white p-8 h-[600px]">
                 <CardHeader className="px-0">
                   <CardTitle className="text-xl flex items-center gap-3">
-                    <Brain className="size-8 text-magentaPulse" /> Synapse Latency Heatmap
+                    <Brain className="size-6 text-rose-500" /> Synapse Latency Heatmap
                   </CardTitle>
-                  <p className="text-xs text-goldLux uppercase tracking-widest mt-1 font-bold">Cross-Node Neural Performance Grid</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest mt-1">Cross-Node Neural Performance Grid</p>
                 </CardHeader>
                 <div className="h-full w-full">
                   <ResponsiveContainer width="100%" height="80%">
@@ -124,20 +117,20 @@ export function Visionary() {
                       <XAxis type="number" dataKey="x" hide />
                       <YAxis type="number" dataKey="y" hide />
                       <ZAxis type="number" dataKey="z" range={[50, 400]} />
-                      <Tooltip
+                      <Tooltip 
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             return (
-                              <div className="glass-dark border-magentaPulse/50 p-4 text-[10px] shadow-neonGlow">
-                                <p className="text-cyanNeon font-bold uppercase">{payload[0].payload.node}</p>
-                                <p className="text-white">Latency: {Math.round(payload[0].value as number)}ms</p>
+                              <div className="glass-dark border-white/10 p-2 text-[10px]">
+                                <p className="text-blue-400 font-bold uppercase">{payload[0].payload.node}</p>
+                                <p>Latency: {Math.round(payload[0].value as number)}ms</p>
                               </div>
                             );
                           }
                           return null;
                         }}
                       />
-                      <Scatter name="Heatmap" data={heatmapData} fill="#ffd700" fillOpacity={0.8} />
+                      <Scatter name="Heatmap" data={heatmapData} fill="#ef4444" fillOpacity={0.6} />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </div>

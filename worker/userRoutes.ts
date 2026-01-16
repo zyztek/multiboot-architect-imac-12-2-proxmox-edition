@@ -4,12 +4,12 @@ import type { ApiResponse, ProjectState, VmConfig, AiArchitectRequest, AiArchite
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/project-state', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
-        const data = await stub.getProjectState();
+        const data = await stub.getProjectState() ?? { vms: [], nodes: [], hostStats: { zfs_health: {} }, orchestrationLog: [] };
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
     app.post('/api/project-state', async (c) => {
         const body = await c.req.json() as ProjectState;
-        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const stub = (c.env.GlobalDurableObject?.get(c.env.GlobalDurableObject.idFromName("global")) ?? { getProjectState: async () => ({}), updateProjectState: async () => ({}) });
         const data = await stub.updateProjectState(body);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
@@ -23,16 +23,42 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         };
         return c.json({ success: true, data: sensorData });
     });
+    app.get('/api/visionary/consoles', async (c) => {
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const state = await stub.getProjectState();
+        const sessions = (state.vms ?? []).map(vm => ({
+            vmid: vm.vmid,
+            name: vm.name,
+            type: 'noVNC' as const,
+            url: `https://pve.internal:8006/?console=kvm&vmid=${vm.vmid}`,
+            token: `vnc-${Math.random().toString(36).substring(7)}`
+        }));
+        return c.json({ success: true, data: sessions });
+    });
+    app.post('/api/upload-iso', async (c) => {
+        const body = await c.req.json() as { filename: string, size: number };
+        // Simulated detection logic matches client for backend validation
+        const mockMetadata = {
+            id: crypto.randomUUID(),
+            filename: body.filename,
+            size: body.size,
+            detectedOs: body.filename.includes('kali') ? 'Kali Linux' : 'Proxmox Host',
+            architecture: 'amd64' as const,
+            format: 'iso' as const,
+            status: 'available' as const
+        };
+        return c.json({ success: true, data: mockMetadata });
+    });
     app.get('/api/cluster', async (c) => {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         const state = await stub.getProjectState();
-        return c.json({ success: true, data: { nodes: state.nodes, zfs_grid: state.hostStats.zfs_health } });
+        return c.json({ success: true, data: { nodes: state.nodes ?? [], zfs_grid: state.hostStats?.zfs_health ?? {} } });
     });
     app.post('/api/ai-wizard', async (c) => {
         const req = await c.req.json() as AiArchitectRequest;
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         const state = await stub.getProjectState();
-        const vmid = 200 + state.vms.length;
+        const vmid = 200 + (state.vms ?? []).length;
         const recommendedVm: VmConfig = {
           vmid,
           name: `${req.goal}-Node-${vmid}`,
@@ -42,7 +68,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
           hasTpm: req.goal === 'Workstation',
           gpuPassthrough: req.goal === 'Gaming' || req.goal === 'Workstation',
           status: 'stopped',
-          node: state.nodes[1]?.name ?? 'pve-imac-02'
+          node: (state.nodes[1]?.name ?? state.nodes[0]?.name ?? 'pve-imac-02')
         };
         const response: AiArchitectResponse = {
             recommendedVms: [recommendedVm],
@@ -51,7 +77,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             reasoning: `Distributed to secondary node to balance thermals.`,
             prediction: `Current trend suggests node-01 will hit thermal limits in 4 hours. Recommend migrating non-GPU VMs to node-02.`
         };
-        const newState = { ...state, vms: [...state.vms, recommendedVm], orchestrationLog: [...state.orchestrationLog, `AI Provisioned ${recommendedVm.name}`] };
+        const newState = { ...state, vms: [...(state.vms ?? []), recommendedVm], orchestrationLog: [...(state.orchestrationLog ?? []), `AI Provisioned ${recommendedVm.name}`] };
         await stub.updateProjectState(newState);
         return c.json({ success: true, data: response });
     });
@@ -59,7 +85,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const { vmid, action } = await c.req.json() as { vmid: number, action: 'start' | 'stop' };
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         const state = await stub.getProjectState();
-        const updatedVms = state.vms.map(vm => vm.vmid === vmid ? { ...vm, status: action === 'start' ? 'running' as const : 'stopped' as const } : vm);
+        const updatedVms = (state.vms ?? []).map(vm => vm.vmid === vmid ? { ...vm, status: action === 'start' ? 'running' as const : 'stopped' as const } : vm);
         const newState = { ...state, vms: updatedVms };
         const data = await stub.updateProjectState(newState);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);

@@ -1,4 +1,5 @@
 import { IsoMetadata } from '@shared/types';
+import { v4 as uuidv4 } from 'uuid';
 export function detectFormat(filename: string, sizeInBytes: number): Partial<IsoMetadata> {
   const ext = filename.split('.').pop()?.toLowerCase();
   let format: IsoMetadata['format'] = 'iso';
@@ -12,7 +13,7 @@ export function detectFormat(filename: string, sizeInBytes: number): Partial<Iso
   else if (filename.toLowerCase().includes('fyde')) detectedOs = 'openFyde';
   else if (filename.toLowerCase().includes('ubuntu')) detectedOs = 'Ubuntu LTS';
   return {
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     filename,
     size: sizeInBytes,
     detectedOs,
