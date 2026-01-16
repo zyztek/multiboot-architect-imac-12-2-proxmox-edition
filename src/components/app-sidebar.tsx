@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, Layers, Box, Monitor, ShieldCheck } from "lucide-react";
+import { Home, BookOpen, PenTool, CheckSquare, Terminal, LayoutDashboard, Layers, Box, Monitor, ShieldCheck, Globe } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ export function AppSidebar(): JSX.Element {
     { path: "/report", icon: BookOpen, label: "Intelligence" },
     { path: "/tools", icon: PenTool, label: "Script Forge" },
     { path: "/protocol", icon: CheckSquare, label: "Deployment" },
+    { path: "/universe", icon: Globe, label: "Universe Codex" },
   ];
   return (
     <Sidebar className="border-r border-white/10 glass-dark backdrop-blur-xl text-slate-200">
@@ -53,7 +54,7 @@ export function AppSidebar(): JSX.Element {
                   <Link to={item.path} className="flex items-center gap-3">
                     <item.icon className={`size-4 ${location.pathname === item.path ? 'text-blue-400' : 'text-slate-500 group-hover:text-white'}`} />
                     <span className="font-medium tracking-tight text-sm">{item.label}</span>
-                    {item.label === 'Visionary' && (
+                    {item.label === 'Universe Codex' && (
                       <span className="ml-auto size-1.5 rounded-full bg-blue-500 animate-pulse" />
                     )}
                   </Link>
@@ -74,7 +75,7 @@ export function AppSidebar(): JSX.Element {
             CLUSTER: ACTIVE
           </div>
           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="text-[8px] text-slate-800 uppercase font-bold tracking-[0.2em]">Quantum Tsunami</div>
+          <div className="text-[8px] text-blue-400 uppercase font-black tracking-[0.2em] animate-pulse">Infinity Robust</div>
         </div>
       </SidebarFooter>
     </Sidebar>

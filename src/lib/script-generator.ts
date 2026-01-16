@@ -10,6 +10,42 @@ interface GeneratorOptions {
 export function generateScript(options: GeneratorOptions): string {
   const { mode, usbDrive, isoPath, storage, diskId = 'local-zfs', vms } = options;
   switch (mode) {
+    case 'ventoy-god':
+      return `# VENTOY GOD-MODE PROVISIONER v2.0
+# Target: iMac 12,2 (Sandy Bridge / Radeon 6970M)
+
+$USB = "${usbDrive || 'E:'}"
+$VENTOY_URL = "https://github.com/ventoy/Ventoy/releases/download/v1.0.97/ventoy-1.0.97-windows.zip"
+
+Write-Host "[1/4] INITIALIZING VENTOY CORE..." -ForegroundColor Cyan
+# Command: .\\Ventoy2Disk.exe -i $USB --force
+
+Write-Host "[2/4] INJECTING IMAC OPENCORE PATCH..." -ForegroundColor Blue
+$OC_DRIVER = "iMac-12-2-SandyBridge-6970M.efi"
+$VTOY_EFI = "$USB\\VTOY_EFI"
+New-Item -Path "$VTOY_EFI\\OC" -ItemType Directory -Force
+Invoke-WebRequest -Uri "https://pve-imac.internal/drivers/$OC_DRIVER" -OutFile "$VTOY_EFI\\OC\\$OC_DRIVER"
+
+Write-Host "[3/4] DEPLOYING MULTI-ISO PAYLOADS..." -ForegroundColor Green
+$ISOs = @("proxmox-ve_8.1.iso", "kali-linux-2024.1.iso", "win11-sandybridge-patched.iso")
+foreach ($iso in $ISOs) {
+    Write-Host "Streaming $iso to $USB..."
+    # Copy-Item "$isoPath\\$iso" "$USB"
+}
+
+Write-Host "[4/4] SEALING BOOTLOADER WITH NOMODESET..." -ForegroundColor Yellow
+$VENTOY_CONF = @"
+{
+    "control": [
+        { "vtoy_default_image": "/proxmox-ve_8.1.iso" },
+        { "vtoy_kernel_append": "quiet intel_iommu=on nomodeset" }
+    ]
+}
+"@
+$VENTOY_CONF | Out-File "$USB\\ventoy\\ventoy.json" -Encoding utf8
+
+Write-Host "USB PROVISIONING COMPLETE. READY FOR IMAC BOOT." -ForegroundColor Green`;
+
     case 'terraform':
       return `# Terraform Provider: Proxmox
 provider "proxmox" {

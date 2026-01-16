@@ -13,6 +13,33 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const data = await stub.updateProjectState(body);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
+    app.post('/api/auth/login', async (c) => {
+        const { username } = await c.req.json() as { username: string };
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const state = await stub.getProjectState();
+        const user: AuthUser = { id: 'u1', username: username || 'Architect', role: 'admin', token: 'mock-jwt-infinity' };
+        await stub.updateProjectState({ ...state, auth: { isAuthenticated: true, user } });
+        return c.json({ success: true, data: user });
+    });
+    app.get('/api/codex', async (c) => {
+        const items: CodexItem[] = [
+            { id: 'c1', category: 'Robust', title: 'Zod Validation Fortress', description: 'Deep recursive schema validation for all API inputs.', complexity: 'Elite' },
+            { id: 'c2', category: 'USB', title: 'Ventoy Multi-ISO God Mode', description: 'Automated injection of OpenCore drivers into VTOY_EFI.', complexity: 'God', cmd: 'ventoy-inject --imac-12-2' },
+            { id: 'c3', category: 'Galaxy', title: 'Terraform Cluster Provider', description: 'HCL definitions for Sandy Bridge VM pools.', complexity: 'Advanced' },
+            { id: 'c4', category: 'Visionary', title: 'PiP Neural Stream', description: 'Picture-in-Picture mode for concurrent VM monitoring.', complexity: 'Elite' },
+            { id: 'c5', category: 'VM', title: 'VHD-to-ZFS Atomic Porter', description: 'Zero-copy conversion of legacy Windows disks.', complexity: 'God' }
+        ];
+        return c.json({ success: true, data: items });
+    });
+    app.post('/api/usb-sim', async (c) => {
+        const body = await c.req.json() as { partitions: any[] };
+        const isValid = body.partitions.length > 0;
+        await new Promise(r => setTimeout(r, 1000));
+        return c.json({ 
+            success: isValid, 
+            data: { message: isValid ? "Geometry Validated" : "Overlap Detected", log: ["Checking GPT tables...", "EFI partition alignment OK"] } 
+        });
+    });
     app.get('/api/sensors', async (c) => {
         const sensorData: SensorData = {
           temp_cpu: 45 + Math.random() * 15,

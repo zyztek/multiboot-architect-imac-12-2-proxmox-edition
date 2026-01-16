@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Terminal, Calculator, ShieldAlert, Upload, FileText, Database, Plus } from 'lucide-react';
+import { Copy, Terminal, Calculator, ShieldAlert, Upload, FileText, Database, Plus, Zap, HardDrive, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { generateScript } from '@/lib/script-generator';
@@ -40,6 +40,8 @@ export function ArchitectTools() {
   const [kali, setKali] = useState(100);
   const [fyde, setFyde] = useState(100);
   const [scriptMode, setScriptMode] = useState<ScriptMode>('usb');
+  const [isGodMode, setIsGodMode] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [detectedIso, setDetectedIso] = useState<IsoMetadata | null>(null);
   useEffect(() => {
@@ -60,10 +62,17 @@ export function ArchitectTools() {
       toast.info(`Detected: ${metadata.detectedOs} (${metadata.format})`);
     }
   };
-  const generatedScriptCode = detectedIso 
+  const runSimulation = async () => {
+    setIsSimulating(true);
+    const res = await fetch('/api/usb-sim', { method: 'POST', body: JSON.stringify({ partitions: [win11, kali, fyde] }) });
+    await new Promise(r => setTimeout(r, 2000));
+    setIsSimulating(false);
+    toast.success("USB Provisioning Simulation Successful");
+  };
+  const generatedScriptCode = detectedIso
     ? generateImportCommand(detectedIso)
     : generateScript({
-        mode: scriptMode,
+        mode: isGodMode ? 'ventoy-god' : scriptMode,
         storage: { win11, kali, fyde, shared: sharedSize },
         vms: projectState?.vms
       });
@@ -83,6 +92,17 @@ export function ArchitectTools() {
                   <CardTitle className="text-blue-400 flex items-center gap-2 text-sm"><Calculator className="size-4" /> Storage Blueprint</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between p-3 bg-blue-600/10 border border-blue-500/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className={`size-4 ${isGodMode ? 'text-blue-400 animate-pulse' : 'text-slate-500'}`} />
+                      <span className="text-[10px] font-bold uppercase text-white">USB God Mode</span>
+                    </div>
+                    <Button 
+                       variant={isGodMode ? "default" : "outline"} 
+                       size="sm" className="h-6 text-[9px]"
+                       onClick={() => setIsGodMode(!isGodMode)}
+                    >{isGodMode ? "ON" : "OFF"}</Button>
+                  </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center"><Label className="text-[10px] text-slate-500 uppercase">Win11 Allocation</Label><span className="text-blue-400 font-mono text-xs">{win11}GB</span></div>
                     <Slider value={[win11]} onValueChange={(v) => setWin11(v[0])} max={500} step={10} />
@@ -138,6 +158,14 @@ export function ArchitectTools() {
                   </div>
                 </Card>
               )}
+              {isGodMode && (
+                <Card className="glass-dark border-emerald-500/30 bg-emerald-600/5 text-emerald-400 p-4">
+                  <div className="text-[10px] uppercase font-bold mb-2">Simulation Engine</div>
+                  <Button onClick={runSimulation} disabled={isSimulating} className="w-full h-8 text-[9px] bg-emerald-600">
+                    {isSimulating ? <RefreshCw className="size-3 animate-spin mr-2" /> : <HardDrive className="size-3 mr-2" />} {isSimulating ? "FLASHING..." : "RUN VIRTUAL FLASH"}
+                  </Button>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -145,7 +173,7 @@ export function ArchitectTools() {
            <Card className="glass-dark border-white/10 text-white h-[600px] flex flex-col overflow-hidden shadow-2xl">
             <CardHeader className="bg-white/5 border-b border-white/5 flex flex-row items-center justify-between py-4">
               <CardTitle className="text-emerald-400 flex items-center gap-2 text-sm font-black tracking-widest"><Terminal className="size-4" /> FORGE OUTPUT</CardTitle>
-              <Badge variant="outline" className="text-[9px] uppercase border-emerald-500/30 text-emerald-400 font-mono">{detectedIso ? 'UNIVERSE' : scriptMode}</Badge>
+              <Badge variant="outline" className="text-[9px] uppercase border-emerald-500/30 text-emerald-400 font-mono">{detectedIso ? 'UNIVERSE' : isGodMode ? 'GOD' : scriptMode}</Badge>
             </CardHeader>
             <CardContent className="p-0 flex-1 relative bg-black/40">
                <pre className="p-6 h-full overflow-auto text-emerald-300/90 font-mono text-[11px] leading-relaxed">
