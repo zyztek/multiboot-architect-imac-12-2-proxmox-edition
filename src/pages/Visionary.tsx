@@ -15,6 +15,7 @@ export function Visionary() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
+      if (!json.success || !json.data) throw new Error("State sync failed");
       return json.data;
     }
   });
@@ -24,6 +25,7 @@ export function Visionary() {
     z: Math.random() * 100,
     node: i < 25 ? 'node-01' : 'node-02'
   }));
+  const vms = state?.vms ?? [];
   return (
     <AppLayout container className="bg-slate-950 text-slate-100">
       <div className="space-y-8 animate-fade-in">
@@ -33,15 +35,15 @@ export function Visionary() {
             <p className="text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase">Multiverse Console / Live OS Stream</p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={() => setActiveView('grid')} 
+            <Button
+              onClick={() => setActiveView('grid')}
               variant={activeView === 'grid' ? 'default' : 'outline'}
               className="h-8 text-[10px] uppercase px-4 bg-blue-600 hover:bg-blue-500"
             >
               <Monitor className="size-3 mr-2" /> Live Grid
             </Button>
-            <Button 
-              onClick={() => setActiveView('neural')} 
+            <Button
+              onClick={() => setActiveView('neural')}
               variant={activeView === 'neural' ? 'default' : 'outline'}
               className="h-8 text-[10px] uppercase px-4"
             >
@@ -51,13 +53,13 @@ export function Visionary() {
         </div>
         <AnimatePresence mode="wait">
           {activeView === 'grid' ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {state?.vms.map((vm) => (
+              {vms.map((vm) => (
                 <Card key={vm.vmid} className="glass-dark border-white/10 overflow-hidden group hover:border-blue-500/50 transition-all">
                   <CardHeader className="p-4 border-b border-white/5 flex flex-row items-center justify-between bg-black/40">
                     <CardTitle className="text-sm font-mono flex items-center gap-2">
@@ -69,8 +71,8 @@ export function Visionary() {
                   <CardContent className="p-0 aspect-video relative bg-slate-900 flex items-center justify-center overflow-hidden">
                     {vm.status === 'running' ? (
                       <>
-                        <img 
-                          src={`https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800`} 
+                        <img
+                          src={`https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800`}
                           className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all duration-700"
                           alt="Console Stream"
                         />
@@ -96,9 +98,14 @@ export function Visionary() {
                   </div>
                 </Card>
               ))}
+              {vms.length === 0 && (
+                <div className="col-span-full p-12 text-center text-slate-500 font-mono uppercase tracking-widest border border-dashed border-white/10 rounded-xl">
+                  No active virtualizations detected
+                </div>
+              )}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
@@ -117,7 +124,7 @@ export function Visionary() {
                       <XAxis type="number" dataKey="x" hide />
                       <YAxis type="number" dataKey="y" hide />
                       <ZAxis type="number" dataKey="z" range={[50, 400]} />
-                      <Tooltip 
+                      <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             return (

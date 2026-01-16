@@ -19,6 +19,7 @@ export function ArchitectTools() {
     queryFn: async () => {
       const res = await fetch('/api/project-state');
       const json = await res.json() as ApiResponse<ProjectState>;
+      if (!json.success || !json.data) throw new Error("State sync failed");
       return json.data;
     }
   });
@@ -64,7 +65,7 @@ export function ArchitectTools() {
   };
   const runSimulation = async () => {
     setIsSimulating(true);
-    const res = await fetch('/api/usb-sim', { method: 'POST', body: JSON.stringify({ partitions: [win11, kali, fyde] }) });
+    await fetch('/api/usb-sim', { method: 'POST', body: JSON.stringify({ partitions: [win11, kali, fyde] }) });
     await new Promise(r => setTimeout(r, 2000));
     setIsSimulating(false);
     toast.success("USB Provisioning Simulation Successful");
@@ -97,8 +98,8 @@ export function ArchitectTools() {
                       <Zap className={`size-4 ${isGodMode ? 'text-blue-400 animate-pulse' : 'text-slate-500'}`} />
                       <span className="text-[10px] font-bold uppercase text-white">USB God Mode</span>
                     </div>
-                    <Button 
-                       variant={isGodMode ? "default" : "outline"} 
+                    <Button
+                       variant={isGodMode ? "default" : "outline"}
                        size="sm" className="h-6 text-[9px]"
                        onClick={() => setIsGodMode(!isGodMode)}
                     >{isGodMode ? "ON" : "OFF"}</Button>
@@ -109,8 +110,12 @@ export function ArchitectTools() {
                     <div className="flex justify-between items-center"><Label className="text-[10px] text-slate-500 uppercase">Kali Lab</Label><span className="text-emerald-400 font-mono text-xs">{kali}GB</span></div>
                     <Slider value={[kali]} onValueChange={(v) => setKali(v[0])} max={300} step={5} />
                   </div>
-                  <Button 
-                    onClick={() => mutation.mutate({ ...projectState!, storage: { win11, kali, fyde, shared: sharedSize } })} 
+                  <Button
+                    onClick={() => {
+                      if (projectState) {
+                        mutation.mutate({ ...projectState, storage: { win11, kali, fyde, shared: sharedSize } });
+                      }
+                    }}
                     className="w-full bg-blue-600 hover:bg-blue-500 text-xs h-10 font-bold uppercase tracking-widest"
                   >
                     Save Allocation
@@ -131,7 +136,7 @@ export function ArchitectTools() {
               </Card>
             </TabsContent>
             <TabsContent value="universe" className="pt-4 space-y-4">
-              <div 
+              <div
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
