@@ -3,7 +3,7 @@ export interface DemoItem {
   name: string;
   value: number;
 }
-export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export' | 'infinity-batch' | 'wiki-gen' | 'project-gen';
+export type ScriptMode = 'usb' | 'zfs-setup' | 'vm-create' | 'terraform' | 'helm' | 'opencore' | 'ventoy-god' | 'singularity-export' | 'infinity-batch' | 'wiki-gen' | 'project-gen' | 'usb-forge' | 'usb-flash';
 export type VmStatus = 'running' | 'stopped' | 'paused' | 'unknown';
 export interface AuthUser {
   id: string;
@@ -83,6 +83,15 @@ export interface Snapshot {
   checklistState: boolean[] | string;
   label: string;
 }
+export interface ForgeJob {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  targetOs: string[];
+  components: string[];
+  downloadUrl?: string;
+  timestamp: string;
+}
 export interface SingularityConfig {
   arEnabled: boolean;
   voiceActive: boolean;
@@ -121,7 +130,7 @@ export interface ClusterNode {
   ip: string;
 }
 export interface ProjectState {
-  checklist: boolean[]; // Note: Persisted as Base64 string in DO storage, but used as boolean array in runtime
+  checklist: boolean[];
   stepPriorities: Record<number, number>;
   storage: StorageConfig;
   vms: VmConfig[];
@@ -133,6 +142,12 @@ export interface ProjectState {
   singularity: SingularityConfig;
   customCodex: CodexItem[];
   evolutionQueue: string[];
+  activeForgeJobs: ForgeJob[];
+  usbDeviceState: {
+    lastConnected: string | null;
+    vendorId?: number;
+    productId?: number;
+  };
   apiConfig: {
     url: string;
     token: string;

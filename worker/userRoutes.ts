@@ -32,6 +32,26 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const data = await stub.triggerEvolution(prompt);
         return c.json({ success: true, data } satisfies ApiResponse<ProjectState>);
     });
+    app.post('/api/usb/forge', async (c) => {
+        const { os, components } = await c.req.json() as { os: string[], components: string[] };
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const state = await stub.getProjectState();
+        const newJob = {
+            id: crypto.randomUUID(),
+            status: 'processing',
+            progress: 0,
+            targetOs: os,
+            components,
+            timestamp: new Date().toISOString()
+        };
+        state.activeForgeJobs = [newJob, ...(state.activeForgeJobs || [])].slice(0, 5);
+        await stub.updateProjectState(state);
+        return c.json({ success: true, data: newJob });
+    });
+    app.get('/api/cosmos/usb-workflow', async (c) => {
+        const { GITHUB_USB_BUILD_WORKFLOW } = await import('@shared/cosmos-templates');
+        return c.json({ success: true, data: GITHUB_USB_BUILD_WORKFLOW });
+    });
     app.get('/api/cosmos/wiki', async (c) => {
         return c.json({ success: true, data: GITHUB_WIKI_TEMPLATE });
     });

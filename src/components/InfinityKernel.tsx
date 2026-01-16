@@ -10,6 +10,8 @@ import { Orchestrator } from '@/pages/Orchestrator';
 import { Visionary } from '@/pages/Visionary';
 import { Universe } from '@/pages/Universe';
 import { Singularity } from '@/pages/Singularity';
+import { UsbForge } from '@/pages/UsbForge';
+import { UsbFlash } from '@/pages/UsbFlash';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, ShieldAlert } from 'lucide-react';
 const router = createBrowserRouter([
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
   { path: "/visionary", element: <Visionary />, errorElement: <RouteErrorBoundary /> },
   { path: "/universe", element: <Universe />, errorElement: <RouteErrorBoundary /> },
   { path: "/singularity", element: <Singularity />, errorElement: <RouteErrorBoundary /> },
+  { path: "/usb-forge", element: <UsbForge />, errorElement: <RouteErrorBoundary /> },
+  { path: "/usb-flash", element: <UsbFlash />, errorElement: <RouteErrorBoundary /> },
 ]);
 export function InfinityKernel() {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'hydrating' | 'degraded' | 'stable'>('hydrating');
