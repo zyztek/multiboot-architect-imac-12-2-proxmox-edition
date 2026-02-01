@@ -1,7 +1,7 @@
 # Cloudflare Workers React Template
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=${repositoryUrl})
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zyztek/multiboot-architect-imac-12-2-proxmox-edition)
 
 A production-ready full-stack starter template for Cloudflare Workers with a modern React frontend. Features server-side rendering via Vite, Durable Objects for stateful storage, Hono routing, shadcn/ui components, Tailwind CSS, TanStack Query, and more. Perfect for building scalable, edge-deployed applications.
 
@@ -155,7 +155,7 @@ const { data } = useQuery({
    ```
 
 **One-Click Deploy**:
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zyztek/multiboot-architect-imac-12-2-proxmox-edition)
 
 Your app will be live at `https://<project-name>.<your-subdomain>.workers.dev`.
 
